@@ -1,5 +1,5 @@
 /* =================================================
---- MODELO CSS: CYBERPUNK NEON (FOTO FIXA NO TOPO) ---
+--- MODELO CSS: CYBERPUNK NEON (45/55 SPLIT) ---
 =================================================
 */
 
@@ -27,21 +27,17 @@ h3 { font-size: 1rem; color: var(--cor-sucesso); margin-top: 10px; }
 hr { border: 0; border-top: 1px solid var(--cor-borda-escura); margin: 15px 0; }
 
 .container { max-width: 1400px; margin: 0 auto; background-color: var(--cor-fundo-container); padding: 15px; border: 1px solid var(--cor-borda-escura); box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); border-radius: 5px; }
+
+/* --- AJUSTE DE COLUNAS 45/55 AQUI --- */
 .flex-container { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
-.col-left { flex: 3; min-width: 300px; }
-.col-right { flex: 2; min-width: 300px; }
+.col-left { flex: 45; min-width: 300px; }  /* 45% */
+.col-right { flex: 55; min-width: 300px; } /* 55% */
 
 /* HEADER E AVATAR */
 .status-box, .recurso-box { background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--cor-borda-escura); padding: 10px; margin-bottom: 10px; border-radius: 4px; }
 .ficha-header-box { background-color: var(--cor-header-box); padding: 10px; }
 
-/* --- CORREÇÃO AQUI: FOTO FIXA NO TOPO --- */
-.header-layout { 
-    display: flex; 
-    gap: 15px; 
-    align-items: flex-start; /* Isso fixa a foto no topo (lado do nome) */
-}
-
+.header-layout { display: flex; gap: 15px; align-items: flex-start; }
 .header-avatar-area { flex-shrink: 0; width: 65px; }
 .avatar-wrapper { width: 100%; height: 65px; border: 2px solid var(--cor-destaque); border-radius: 4px; position: relative; overflow: hidden; background-color: #000; box-shadow: 0 0 8px rgba(0, 255, 255, 0.4); transition: box-shadow 0.3s; }
 .avatar-wrapper:hover { box-shadow: 0 0 15px var(--cor-destaque); }
@@ -55,33 +51,18 @@ hr { border: 0; border-top: 1px solid var(--cor-borda-escura); margin: 15px 0; }
 .nome-input-group input { font-weight: bold; color: var(--cor-destaque); }
 .gestao-botoes { display: flex; gap: 5px; }
 
-/* --- HEADER INFO ROW (TEXTAREA) --- */
 .header-info-row { display: flex; gap: 10px; width: 100%; flex-wrap: wrap; align-items: flex-start; }
 .info-group { display: flex; flex-direction: column; flex: 1; min-width: 100px; }
 .info-group label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; margin-bottom: 2px; }
 
-/* Estilo para textareas do cabeçalho */
-.info-group textarea.auto-resize {
-    width: 100%;
-    font-size: 0.9rem;
-    padding: 6px;
-    background-color: rgba(0, 0, 0, 0.3);
-    border: 1px solid #444;
-    overflow: hidden; 
-    resize: none;
-    min-height: 38px;
-    line-height: 1.4;
-    border-radius: 3px;
-    color: var(--cor-texto-claro);
-    font-family: inherit;
-}
+.info-group textarea.auto-resize { width: 100%; font-size: 0.9rem; padding: 6px; background-color: rgba(0, 0, 0, 0.3); border: 1px solid #444; overflow: hidden; resize: none; min-height: 38px; line-height: 1.4; border-radius: 3px; color: var(--cor-texto-claro); font-family: inherit; }
 .info-group textarea.auto-resize:focus { border-color: var(--cor-destaque); background: rgba(0,0,0,0.5); }
 
 /* RECURSOS */
 .recurso-box { display: flex; justify-content: space-around; font-weight: bold; font-size: 1.1rem; background: linear-gradient(90deg, #1C1C3A 0%, #252545 100%); }
 .recurso-item span { color: var(--cor-sucesso); text-shadow: 0 0 3px var(--cor-sucesso); }
 
-/* INPUTS E BOTÕES GERAIS */
+/* GERAL */
 input, select, textarea { background-color: var(--cor-input-fundo); border: 1px solid var(--cor-borda-escura); color: var(--cor-texto-claro); padding: 6px; font-family: inherit; border-radius: 3px; outline: none; transition: border-color 0.3s; }
 input:focus, select:focus, textarea:focus { border-color: var(--cor-destaque); box-shadow: 0 0 5px rgba(0, 255, 255, 0.2); }
 
@@ -101,7 +82,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--cor-destaque); b
 .adicionar-mod-btn { background-color: transparent; border: 1px dashed var(--cor-sucesso); color: var(--cor-sucesso); width: 100%; padding: 5px; font-size: 0.8rem; cursor: pointer; margin-top: 5px; }
 .adicionar-mod-btn:hover { background-color: rgba(0, 255, 127, 0.1); border-style: solid; box-shadow: 0 0 5px var(--cor-sucesso); }
 
-/* ATRIBUTOS E PERÍCIAS */
+/* ATRIBUTOS */
 .atributo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 8px; background-color: rgba(255, 255, 255, 0.03); border-radius: 4px; border-left: 2px solid transparent; gap: 10px; }
 .atributo-row.inspirado { border-left: 2px solid var(--cor-alerta); background-color: rgba(255, 215, 0, 0.05); }
 .atributo-row label { width: 110px; min-width: 110px; font-weight: bold; font-size: 0.95rem; }
@@ -116,10 +97,23 @@ input:focus, select:focus, textarea:focus { border-color: var(--cor-destaque); b
 .pericia-nome { flex-grow: 1; }
 .pericia-raridade { width: 100px; flex-shrink: 0; }
 
-/* SKILLS & MODIFICADORES */
+/* SKILLS */
 .skill-item { background-color: rgba(0, 0, 0, 0.3); border: 1px solid #333; padding: 10px; margin-bottom: 15px; border-radius: 4px; overflow: hidden; }
 .skill-item:hover { border-color: var(--cor-destaque); }
 .skill-header-row { margin-bottom: 8px; }
+
+/* Nome da Skill em Destaque */
+.skill-nome { 
+    font-weight: 900 !important; 
+    text-transform: uppercase;   
+    font-size: 1.15rem !important; 
+    color: var(--cor-destaque);
+    letter-spacing: 1px;
+    text-shadow: 0 0 2px rgba(0,0,0,0.8);
+}
+.skill-header-row input.skill-nome { background: transparent; border: none; border-bottom: 1px solid #444; padding: 5px 0; }
+.skill-header-row input.skill-nome:focus { border-color: var(--cor-destaque); background: rgba(0,0,0,0.2); }
+
 .skill-descricao { width: 100%; resize: vertical; font-size: 0.85rem; margin-bottom: 8px; background: rgba(0,0,0,0.2); }
 .skill-select { height: 28px; font-size: 0.85rem; padding: 0 4px; }
 .skill-input-num { width: 50px; text-align: center; }
@@ -132,7 +126,21 @@ input:focus, select:focus, textarea:focus { border-color: var(--cor-destaque); b
 .modifier-entry .skill-mod-group { flex: 0 0 auto; display: flex; align-items: center; gap: 2px; }
 .modifier-entry .remover-modificador-btn { flex: 0 0 auto; margin-left: auto; }
 
-/* INVENTÁRIO */
+/* ABAS */
+.skill-tabs { display: flex; gap: 5px; margin-bottom: 15px; border-bottom: 1px solid var(--cor-borda-escura); padding-bottom: 5px; }
+.skill-tab-btn { background: transparent; border: none; color: #666; padding: 8px 12px; cursor: pointer; font-weight: bold; flex: 1; border-bottom: 2px solid transparent; transition: all 0.3s; }
+.skill-tab-btn:hover { color: var(--cor-texto-claro); background-color: rgba(255, 255, 255, 0.05); }
+.skill-tab-btn.active { color: var(--cor-destaque); border-bottom-color: var(--cor-destaque); background-color: rgba(0, 255, 255, 0.05); text-shadow: 0 0 5px var(--cor-destaque); }
+
+.tab-count { font-size: 0.8rem; opacity: 0.7; margin-left: 5px; color: var(--cor-sucesso); }
+
+.sub-tab-btn { background: transparent; border: 1px solid var(--cor-borda-escura); color: #888; padding: 4px 15px; cursor: pointer; font-size: 0.8rem; border-radius: 15px; transition: all 0.3s; text-transform: uppercase; }
+.sub-tab-btn:hover { border-color: var(--cor-texto-claro); color: var(--cor-texto-claro); }
+.sub-tab-btn.active { background-color: var(--cor-destaque); color: #000; border-color: var(--cor-destaque); font-weight: bold; box-shadow: 0 0 8px var(--cor-destaque); }
+
+#container-visualizacao:empty::after { content: "Nenhuma habilidade nesta categoria."; display: block; color: #444; font-size: 0.8rem; font-style: italic; padding: 10px; text-align: center; }
+
+/* INVENTÁRIO (COM ÍCONES) */
 .inv-form-header { display: flex; gap: 5px; margin-bottom: 5px; }
 .inv-item { background-color: rgba(255, 255, 255, 0.05); border: 1px solid #444; padding: 8px; margin-bottom: 5px; border-radius: 3px; }
 .inv-header-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -143,12 +151,21 @@ input:focus, select:focus, textarea:focus { border-color: var(--cor-destaque); b
 .inv-stats-row { font-size: 0.75rem; color: #888; margin-top: 2px; }
 .inv-desc-display { font-size: 0.85rem; color: #aaa; font-style: italic; margin-top: 8px; padding-left: 24px; white-space: pre-wrap; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 5px; }
 
+/* Ícones */
 .inv-icon-selector-area { margin-top: 5px; border: 1px solid #333; padding: 5px; border-radius: 3px; background: rgba(0,0,0,0.2); }
 .inv-icon-grid { display: flex; gap: 5px; flex-wrap: wrap; }
 .inv-icon-option { width: 30px; height: 30px; border: 1px solid #444; padding: 2px; cursor: pointer; border-radius: 3px; opacity: 0.6; transition: all 0.2s; }
 .inv-icon-option:hover { opacity: 1; border-color: var(--cor-texto-claro); }
 .inv-icon-option.selected { opacity: 1; border-color: var(--cor-destaque); background-color: rgba(0, 255, 255, 0.1); box-shadow: 0 0 5px var(--cor-destaque); }
 .inv-icon-option svg { width: 100%; height: 100%; }
+
+/* MODAL */
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.85); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+.modal-content { background-color: var(--cor-fundo-container); border: 2px solid var(--cor-destaque); padding: 20px; border-radius: 5px; width: 90%; max-width: 500px; box-shadow: 0 0 20px var(--cor-destaque); text-align: center; }
+.img-container-crop { max-height: 400px; margin-bottom: 20px; overflow: hidden; background-color: #000; }
+.img-container-crop img { max-width: 100%; display: block; }
+.modal-buttons { display: flex; justify-content: space-between; gap: 10px; }
+.modal-buttons button { flex: 1; font-size: 1rem; padding: 10px; }
 
 @media (max-width: 768px) {
     .container { padding: 10px; width: 100%; border: none; }
@@ -159,60 +176,9 @@ input:focus, select:focus, textarea:focus { border-color: var(--cor-destaque); b
     .header-info-row { flex-direction: column; gap: 8px; }
     .atributo-row { flex-wrap: wrap; }
     .treino-info { width: 100%; justify-content: space-between; margin-top: 5px; padding-top: 5px; border-top: 1px solid #333; }
-    
     .skill-tags-and-costs-grid { display: flex !important; flex-direction: column; }
     .skill-tag-group, .skill-cost-group, .skill-nerf-group { width: 100%; margin-bottom: 5px; }
     .skill-select, .skill-input-num { width: 100%; }
-    
     .inv-header-row { flex-wrap: wrap; }
     .inv-contador-group { margin-left: auto; }
-}
-/* --- JANELA MODAL DE RECORTE (CROPPER) --- */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.85); /* Fundo escuro transparente */
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: var(--cor-fundo-container);
-    border: 2px solid var(--cor-destaque);
-    padding: 20px;
-    border-radius: 5px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 0 20px var(--cor-destaque);
-    text-align: center;
-}
-
-.img-container-crop {
-    max-height: 400px; /* Limita altura para não estourar a tela */
-    margin-bottom: 20px;
-    overflow: hidden;
-    background-color: #000;
-}
-
-/* Garante que a imagem dentro do cropper não estoure */
-.img-container-crop img {
-    max-width: 100%;
-    display: block;
-}
-
-.modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.modal-buttons button {
-    flex: 1;
-    font-size: 1rem;
-    padding: 10px;
 }
