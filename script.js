@@ -1,5 +1,5 @@
 /* ================================================================================
-   SCRIPT.JS - CORRIGIDO (CÁLCULOS E RADAR FUNCIONANDO)
+   SCRIPT.JS - VERSÃO FINAL (SEM CAIXAS REDUNDANTES NAS SKILLS)
    ================================================================================ */
 
 window.regra = {};             
@@ -37,69 +37,27 @@ function getAllModifierCategories() { const categories = Object.keys(SKILL_MODIF
 function getEffectsForCategory(categoryName) { if (categoryName === 'Efeitos Adversos (Nerfs)') return SKILL_NERFS; return SKILL_MODIFIERS[categoryName] || []; }
 
 // --- FUNÇÕES DE UI (MENU E ABAS) ---
-function toggleMenu() {
-    document.getElementById("menu-dropdown").classList.toggle("show");
-}
-// Fecha o menu se clicar fora
-window.onclick = function(event) {
-    if (!event.target.matches('.menu-btn')) {
-        var dropdowns = document.getElementsByClassName("dropdown-content");
-        for (var i = 0; i < dropdowns.length; i++) {
-            var openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
-            }
-        }
-    }
-}
+function toggleMenu() { document.getElementById("menu-dropdown").classList.toggle("show"); }
+window.onclick = function(event) { if (!event.target.matches('.menu-btn')) { var dropdowns = document.getElementsByClassName("dropdown-content"); for (var i = 0; i < dropdowns.length; i++) { var openDropdown = dropdowns[i]; if (openDropdown.classList.contains('show')) { openDropdown.classList.remove('show'); } } } }
 
 function mudarAbaPrincipal(aba) {
-    // Esconde todos
     document.getElementById('view-atributos').style.display = 'none';
     document.getElementById('view-batalha').style.display = 'none';
     document.getElementById('view-radar').style.display = 'none';
-    
-    // Tira active dos botões
     const btns = document.querySelectorAll('.tab-principal-btn');
     btns.forEach(b => b.classList.remove('active'));
-
-    // Mostra o selecionado
     document.getElementById(`view-${aba}`).style.display = 'block';
-    
-    // Acha o botão clicado
     if(aba === 'atributos') btns[0].classList.add('active');
     if(aba === 'batalha') btns[1].classList.add('active');
-    if(aba === 'radar') {
-        btns[2].classList.add('active');
-        atualizarGrafico(); // Força update do gráfico
-    }
+    if(aba === 'radar') { btns[2].classList.add('active'); atualizarGrafico(); }
 }
 
 // --- AUTO SAVE ---
-function salvarAutomaticamente() {
-    const dados = gerarObjetoFicha();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dados));
-}
+function salvarAutomaticamente() { const dados = gerarObjetoFicha(); localStorage.setItem(STORAGE_KEY, JSON.stringify(dados)); }
+function carregarDadosAutomaticos() { const dadosSalvos = localStorage.getItem(STORAGE_KEY); if (dadosSalvos) { try { const dados = JSON.parse(dadosSalvos); aplicarDadosNaTela(dados); } catch (e) { console.error("Erro ao carregar auto-save", e); } } }
 
-function carregarDadosAutomaticos() {
-    const dadosSalvos = localStorage.getItem(STORAGE_KEY);
-    if (dadosSalvos) {
-        try {
-            const dados = JSON.parse(dadosSalvos);
-            aplicarDadosNaTela(dados);
-        } catch (e) { console.error("Erro ao carregar auto-save", e); }
-    }
-}
-
-// --- ATRIBUTOS (CORRIGIDO AQUI) ---
-function getAttrValue(name) { 
-    // AGORA PROCURA PELA CLASSE, NÃO PELO ID DO PAI (QUE MUDOU)
-    const row = document.querySelector(`.atributo-row[data-nome="${name}"]`); 
-    if (!row) return 0; 
-    const input = row.querySelector('.atributo-input'); 
-    return parseInt(input ? input.value : 0) || 0; 
-}
-
+// --- ATRIBUTOS ---
+function getAttrValue(name) { const row = document.querySelector(`.atributo-row[data-nome="${name}"]`); if (!row) return 0; const input = row.querySelector('.atributo-input'); return parseInt(input ? input.value : 0) || 0; }
 function incrementAttr(button) { const input = button.closest('.atributo-input-group').querySelector('.atributo-input'); let value = parseInt(input.value) || 0; input.value = value + 1; atualizarSistemaCompleto(); salvarAutomaticamente(); }
 function decrementAttr(button) { const input = button.closest('.atributo-input-group').querySelector('.atributo-input'); let value = parseInt(input.value) || 0; if (value > 1) { input.value = value - 1; atualizarSistemaCompleto(); salvarAutomaticamente(); } }
 function gerenciarClickTreino(btn) { const row = btn.closest('.atributo-row'); const contadorSpan = row.querySelector('.treino-contador'); const inputAttr = row.querySelector('.atributo-input'); let usoAtual = parseInt(contadorSpan.innerText) || 0; let valorAtributo = parseInt(inputAttr.value) || 0; if (usoAtual >= valorAtributo) aplicarTreino(btn); else alterarUsoAtributo(row, 1); }
@@ -108,76 +66,100 @@ function verificarTreinoAtributo(row) { const inputAttr = row.querySelector('.at
 function aplicarTreino(btn) { const row = btn.closest('.atributo-row'); const inputAttr = row.querySelector('.atributo-input'); const contadorSpan = row.querySelector('.treino-contador'); let valorAtual = parseInt(inputAttr.value) || 0; inputAttr.value = valorAtual + 1; contadorSpan.innerText = '0'; atualizarSistemaCompleto(); salvarAutomaticamente(); }
 
 function calcularNivelBaseadoEmPontos(gastos) { let nivelBruto = gastos / PONTOS_POR_NIVEL_FLOAT; if (nivelBruto < 0.01) nivelBruto = 0.01; return parseFloat(nivelBruto.toFixed(2)); }
-
 function atualizarSistemaCompleto() { 
-    // SELETOR CORRIGIDO PARA NÃO DEPENDER DE ID
-    const rows = document.querySelectorAll('.atributo-row'); 
-    let gastos = 0; 
+    const rows = document.querySelectorAll('.atributo-row'); let gastos = 0; 
     rows.forEach(row => { const input = row.querySelector('.atributo-input'); const valor = parseInt(input.value) || 0; gastos += valor; verificarTreinoAtributo(row); }); 
     const nivelAtual = calcularNivelBaseadoEmPontos(gastos); 
     let totalPontosPermitidos = Math.round(nivelAtual * PONTOS_POR_NIVEL_FLOAT); 
     document.getElementById('nivel-display').innerText = nivelAtual.toFixed(2); 
     document.getElementById('total-pontos').innerText = totalPontosPermitidos; 
     window.regra = { nivelAtual, gastosAtuais: gastos }; 
-    
-    // AGORA ESTES CHAMAM getAttrValue QUE ESTÁ CORRIGIDO
-    calcularRecursos(); 
-    calcularPericias(); 
-    calcularSkills();
-    atualizarGrafico(); 
+    calcularRecursos(); calcularPericias(); calcularSkills(); atualizarGrafico(); 
 }
-
-function calcularRecursos() { 
-    const F = getAttrValue("Forca"); 
-    const R = getAttrValue("Resistencia"); 
-    const E = getAttrValue("Espírito"); 
-    const I = getAttrValue("Inteligencia"); 
-    const C = getAttrValue("Carisma"); 
-    document.getElementById('hp-display').innerText = R * 4; 
-    document.getElementById('st-display').innerText = R * 2 + F; 
-    document.getElementById('mp-display').innerText = E * 2 + I; 
-    document.getElementById('psi-display').innerText = I * 2 + C; 
-}
+function calcularRecursos() { const F = getAttrValue("Forca"); const R = getAttrValue("Resistencia"); const E = getAttrValue("Espírito"); const I = getAttrValue("Inteligencia"); const C = getAttrValue("Carisma"); document.getElementById('hp-display').innerText = R * 4; document.getElementById('st-display').innerText = R * 2 + F; document.getElementById('mp-display').innerText = E * 2 + I; document.getElementById('psi-display').innerText = I * 2 + C; }
 
 // --- PERÍCIAS ---
 function calcularCustoPericia(elemento) { const item = elemento.closest('.pericia-item'); const raridade = item.querySelector('.pericia-raridade').value; item.dataset.custo = CUSTO_RARIDADE[raridade] || 0; calcularPericias(); salvarAutomaticamente(); }
 function calcularPericias() { const nivel = window.regra.nivelAtual || 0.01; const ptsBase = Math.floor(nivel * 10); const ptsPrincipal = ptsBase; const ptsSecundaria = Math.max(0, ptsBase - 5); const ptsTerciaria = Math.max(0, ptsBase - 10); document.getElementById('pericia-principal-pts').innerText = ptsPrincipal; document.getElementById('pericia-secundaria-pts').innerText = ptsSecundaria; document.getElementById('pericia-terciaria-pts').innerText = ptsTerciaria; atualizarDisplayGastos('principal', somarGastosPericia('principal'), ptsPrincipal); atualizarDisplayGastos('secundaria', somarGastosPericia('secundaria'), ptsSecundaria); atualizarDisplayGastos('terciaria', somarGastosPericia('terciaria'), ptsTerciaria); }
 function somarGastosPericia(cat) { const container = document.getElementById(`pericias-${cat}`); let total = 0; if (container) container.querySelectorAll('.pericia-item').forEach(item => total += parseInt(item.dataset.custo) || 0); return total; }
 function atualizarDisplayGastos(cat, gastos, limite) { const display = document.getElementById(`pericia-${cat}-gastos`); if (display) { display.innerText = gastos; display.style.color = (gastos > limite) ? 'var(--cor-perigo)' : 'var(--cor-sucesso)'; } }
-function criarPericiaElement(categoria, dados) { const item = document.createElement('div'); item.className = 'pericia-item'; item.dataset.categoria = categoria; item.dataset.custo = dados.custo || CUSTO_RARIDADE[dados.raridade] || 1; const raridade = dados.raridade || 'Comum'; const raridadeOptions = Object.keys(CUSTO_RARIDADE).map(r => `<option value="${r}" ${r === raridade ? 'selected' : ''}>${r}</option>`).join(''); item.innerHTML = ` <input type="text" class="pericia-nome" value="${dados.nome || 'Nova Perícia'}" placeholder="Nome"> <select class="pericia-raridade" onchange="calcularCustoPericia(this)">${raridadeOptions}</select> <button onclick="removerPericia(this)" class="remover-pericia-btn">X</button> `; 
-    item.querySelector('.pericia-nome').addEventListener('input', () => { calcularPericias(); salvarAutomaticamente(); }); 
-    item.querySelector('.pericia-raridade').addEventListener('change', () => salvarAutomaticamente());
-    return item; 
-}
+function criarPericiaElement(categoria, dados) { const item = document.createElement('div'); item.className = 'pericia-item'; item.dataset.categoria = categoria; item.dataset.custo = dados.custo || CUSTO_RARIDADE[dados.raridade] || 1; const raridade = dados.raridade || 'Comum'; const raridadeOptions = Object.keys(CUSTO_RARIDADE).map(r => `<option value="${r}" ${r === raridade ? 'selected' : ''}>${r}</option>`).join(''); item.innerHTML = ` <input type="text" class="pericia-nome" value="${dados.nome || 'Nova Perícia'}" placeholder="Nome"> <select class="pericia-raridade" onchange="calcularCustoPericia(this)">${raridadeOptions}</select> <button onclick="removerPericia(this)" class="remover-pericia-btn">X</button> `; item.querySelector('.pericia-nome').addEventListener('input', () => { calcularPericias(); salvarAutomaticamente(); }); item.querySelector('.pericia-raridade').addEventListener('change', () => salvarAutomaticamente()); return item; }
 function adicionarPericia(cat) { const container = document.getElementById(`pericias-${cat}`); const item = criarPericiaElement(cat, { nome: 'Nova Perícia', raridade: 'Comum' }); container.appendChild(item); calcularCustoPericia(item.querySelector('.pericia-raridade')); salvarAutomaticamente(); }
 function removerPericia(btn) { btn.closest('.pericia-item').remove(); calcularPericias(); salvarAutomaticamente(); }
 
 // --- SKILLS ---
-function mudarAbaSkills(aba) {
-    currentSkillTab = aba;
-    document.querySelectorAll('.skill-tab-btn').forEach(btn => { if(btn.id === `tab-btn-${aba}`) btn.classList.add('active'); else btn.classList.remove('active'); });
-    organizarSkillsVisualmente();
-}
-function mudarSubAba(tipo) {
-    currentSkillType = tipo;
-    document.querySelectorAll('.sub-tab-btn').forEach(btn => { if((tipo === 'A' && btn.innerText === 'Ativas') || (tipo === 'P' && btn.innerText === 'Passivas')) { btn.classList.add('active'); } else { btn.classList.remove('active'); } });
-    organizarSkillsVisualmente();
-}
+function mudarAbaSkills(aba) { currentSkillTab = aba; document.querySelectorAll('.skill-tab-btn').forEach(btn => { if(btn.id === `tab-btn-${aba}`) btn.classList.add('active'); else btn.classList.remove('active'); }); organizarSkillsVisualmente(); }
+function mudarSubAba(tipo) { currentSkillType = tipo; document.querySelectorAll('.sub-tab-btn').forEach(btn => { if((tipo === 'A' && btn.innerText === 'Ativas') || (tipo === 'P' && btn.innerText === 'Passivas')) { btn.classList.add('active'); } else { btn.classList.remove('active'); } }); organizarSkillsVisualmente(); }
 function organizarSkillsVisualmente() {
     const containerVisualizacao = document.getElementById('container-visualizacao'); const containerStorage = document.getElementById('skills-storage'); const todasSkills = document.querySelectorAll('.skill-item'); const filtroRaridade = document.getElementById('filter-raridade').value; 
     let countST = 0; let countMP = 0; let countPSI = 0;
     todasSkills.forEach(item => { const recurso = item.dataset.recurso; const tipo = item.dataset.tipo; const raridade = item.dataset.raridade; if (recurso === 'ST') countST++; if (recurso === 'MP') countMP++; if (recurso === 'PSI') countPSI++; const pertenceAba = (recurso === currentSkillTab); const pertenceTipo = (tipo === currentSkillType); const passaFiltro = (filtroRaridade === 'Todas' || raridade === filtroRaridade); if (pertenceAba && pertenceTipo && passaFiltro) { containerVisualizacao.appendChild(item); } else { containerStorage.appendChild(item); } });
     document.querySelector('#tab-btn-ST .tab-count').innerText = `[${countST}]`; document.querySelector('#tab-btn-MP .tab-count').innerText = `[${countMP}]`; document.querySelector('#tab-btn-PSI .tab-count').innerText = `[${countPSI}]`;
 }
+
+
+
+// Função atualizada com o novo Layout HTML
 function criarSkillElement(dados) { 
-    const item = document.createElement('div'); item.className = 'skill-item'; const raridade = dados.raridade || 'Comum'; const tipo = dados.tipo || currentSkillType; const custoRecurso = dados.custoRecurso || currentSkillTab; item.dataset.recurso = custoRecurso; item.dataset.tipo = tipo; item.dataset.custo = dados.custo || 0; item.dataset.raridade = raridade; 
+    const item = document.createElement('div'); item.className = 'skill-item'; 
+    const raridade = dados.raridade || 'Comum'; 
+    const tipo = dados.tipo || currentSkillType; 
+    const custoRecurso = dados.custoRecurso || currentSkillTab; 
+    
+    item.dataset.recurso = custoRecurso; 
+    item.dataset.tipo = tipo; 
+    item.dataset.custo = dados.custo || 0; 
+    item.dataset.raridade = raridade; 
+    
     const raridadeOptions = Object.keys(CUSTO_BASE_SKILL_ATIVA).map(r => `<option value="${r}" ${r === raridade ? 'selected' : ''}>${r}</option>`).join('');
-    const tipoOptions = ['A', 'P'].map(t => `<option value="${t}" ${t === tipo ? 'selected' : ''}>${t === 'A' ? 'Ativa' : 'Passiva'}</option>`).join('');
-    const recursoOptions = ['ST', 'MP', 'PSI'].map(r => `<option value="${r}" ${r === custoRecurso ? 'selected' : ''}>${r}</option>`).join('');
-    item.innerHTML = ` <div class="skill-header-row" style="display: flex; gap: 5px; align-items: center;"> <input type="text" class="skill-nome skill-input-text" value="${dados.nome || 'Nova Skill'}" placeholder="Nome" data-tippy-content="${dados.descricao || 'Sem descrição'}" oninput="this.dataset.tippyContent = this.closest('.skill-item').querySelector('.skill-descricao').value; handleSkillChange(this)" style="flex-grow: 1;"> <button onclick="removerSkill(this)" class="remover-skill-btn">✕</button> </div> <textarea class="skill-descricao" rows="2" placeholder="Descrição" oninput="handleSkillChange(this)">${dados.descricao || ''}</textarea> <div class="skill-tags-and-costs-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 5px; align-items: center;"> <div class="skill-tag-group tag-selectors" style="display: flex; flex-direction: column; gap: 3px;"> <select class="skill-select skill-raridade-select" onchange="handleSkillChange(this)">${raridadeOptions}</select> <select class="skill-select skill-tipo-select" onchange="handleSkillChange(this)">${tipoOptions}</select> <select class="skill-select skill-custo-recurso-select" onchange="handleSkillChange(this)">${recursoOptions}</select> </div> <div class="skill-mod-group skill-cost-group" style="display: flex; flex-direction: column; gap: 3px;"> <label>Custo UP:</label> <input type="number" class="skill-custo-input skill-input-num" value="${parseFloat(item.dataset.custo).toFixed(1)}" min="0" readonly> </div> <div class="skill-mod-group skill-nerf-group skill-info-grid-item" style="display: flex; flex-direction: column; gap: 3px;"> <label>Real:</label> <span class="skill-gasto-display" style="font-weight: bold;">0.0</span> <label>Max:</label> <span class="skill-limite-display" style="font-weight: bold;">0.0</span> </div> </div> <div class="skill-modificadores-container" style="margin-top: 10px;"> <label>Modificadores:</label> <div class="modifier-list"></div> <button onclick="adicionarModificador(this)" class="adicionar-mod-btn">+ Efeito</button> </div> `;
-    const modListContainer = item.querySelector('.modifier-list'); if (dados.modificadores) { dados.modificadores.forEach(modData => { modListContainer.appendChild(criarModificadorEntryHTML({ key: modData.categoria, nome: modData.nome, rep: modData.rep })); }); }
-    tippy(item.querySelector('.skill-nome'), { theme: 'translucent', animation: 'scale', placement: 'top' }); setTimeout(() => { calcularCustoSkill(item); calcularSkills(); }, 0); return item;
+
+    item.innerHTML = ` 
+        <div class="skill-header-row"> 
+            <input type="text" class="skill-nome skill-input-text" value="${dados.nome || 'Nova Skill'}" placeholder="Nome" data-tippy-content="${dados.descricao || 'Sem descrição'}" oninput="this.dataset.tippyContent = this.closest('.skill-item').querySelector('.skill-descricao').value; handleSkillChange(this)"> 
+            <button onclick="removerSkill(this)" class="remover-skill-btn">✕</button> 
+        </div> 
+        
+        <div class="skill-main-content">
+            <textarea class="skill-descricao" placeholder="Descrição da habilidade..." oninput="handleSkillChange(this)">${dados.descricao || ''}</textarea>
+            
+            <div class="skill-stats-column">
+                <select class="skill-raridade-select" onchange="handleSkillChange(this)">${raridadeOptions}</select>
+                
+                <div class="skill-costs-row">
+                    <div class="mini-cost-box">
+                        <label>Custo</label>
+                        <input type="number" class="skill-custo-input skill-input-num" value="${parseFloat(item.dataset.custo).toFixed(1)}" min="0" readonly>
+                    </div>
+                    <div class="mini-cost-box">
+                        <label>Max</label>
+                        <span class="skill-limite-display">0.0</span>
+                    </div>
+                </div>
+                <span class="skill-gasto-display" style="display:none;">0.0</span>
+            </div>
+        </div>
+        
+        <div class="skill-modificadores-container"> 
+            <label>Modificadores:</label> 
+            <div class="modifier-list"></div> 
+            <button onclick="adicionarModificador(this)" class="adicionar-mod-btn">+ Efeito</button> 
+        </div> 
+    `;
+    
+    const modListContainer = item.querySelector('.modifier-list'); 
+    if (dados.modificadores) { 
+        dados.modificadores.forEach(modData => { 
+            modListContainer.appendChild(criarModificadorEntryHTML({ key: modData.categoria, nome: modData.nome, rep: modData.rep })); 
+        }); 
+    }
+    
+    tippy(item.querySelector('.skill-nome'), { theme: 'translucent', animation: 'scale', placement: 'top' }); 
+    setTimeout(() => { calcularCustoSkill(item); calcularSkills(); }, 0); 
+    return item;
 }
+
+// ... (Mantenha o resto do código script.js igual) ...
+
 function criarModificadorEntryHTML(modEntryData = {}) {
     const defaultCategory = 'Efeitos Imediatos'; const effectsList = getEffectsForCategory(defaultCategory); const modKey = modEntryData.key || defaultCategory; const modNome = modEntryData.nome || effectsList[0]?.nome || ''; const rep = modEntryData.rep || 1;
     const categoryOptions = getAllModifierCategories().map(cat => `<option value="${cat}" ${cat === modKey ? 'selected' : ''}>${cat}</option>`).join('');
@@ -188,8 +170,40 @@ function handleModifierCategoryChange(select) { const entry = select.closest('.m
 function handleModifierChange(element) { const entry = element.closest('.modifier-entry'); const skillItem = entry.closest('.skill-item'); const category = entry.querySelector('.mod-category-select').value; const modName = entry.querySelector('.mod-name-select').value; let rep = parseInt(entry.querySelector('.mod-repetitions-input').value) || 1; const effects = getEffectsForCategory(category); const baseMod = effects.find(m => m.nome === modName); const baseCost = baseMod ? baseMod.custo : 0; entry.dataset.category = category; entry.dataset.modName = modName; entry.dataset.repetitions = rep; entry.dataset.baseCost = baseCost; entry.querySelector('.mod-total-cost').innerText = (baseCost * rep).toFixed(1); calcularCustoSkill(skillItem); calcularSkills(); salvarAutomaticamente(); }
 function adicionarModificador(btn) { btn.closest('.skill-modificadores-container').querySelector('.modifier-list').appendChild(criarModificadorEntryHTML({})); calcularCustoSkill(btn.closest('.skill-item')); calcularSkills(); salvarAutomaticamente(); }
 function removerModificador(btn) { const item = btn.closest('.skill-item'); btn.closest('.modifier-entry').remove(); calcularCustoSkill(item); calcularSkills(); salvarAutomaticamente(); }
-function handleSkillChange(el) { const item = el.closest('.skill-item'); if (el.classList.contains('skill-custo-recurso-select')) { item.dataset.recurso = el.value; organizarSkillsVisualmente(); } if (el.classList.contains('skill-tipo-select')) { item.dataset.tipo = el.value; organizarSkillsVisualmente(); } if (el.classList.contains('skill-raridade-select')) { item.dataset.raridade = el.value; organizarSkillsVisualmente(); calcularCustoSkill(item); } if (el.classList.contains('skill-tipo-select')) { calcularCustoSkill(item); } calcularSkills(); salvarAutomaticamente(); }
-function calcularCustoSkill(item) { const raridade = item.querySelector('.skill-raridade-select').value; const tipo = item.querySelector('.skill-tipo-select').value; let upsOcupados = 0; let upsReais = 0; let bonusLimiteNerfs = 0; item.querySelectorAll('.modifier-entry').forEach(e => { const cat = e.dataset.category; const nome = e.dataset.modName; const baseCost = parseFloat(e.dataset.baseCost) || 0; const reps = parseInt(e.dataset.repetitions) || 1; const totalCostMod = baseCost * reps; if (cat === 'Efeitos Adversos (Nerfs)') { bonusLimiteNerfs += totalCostMod; } else { if (nome === 'Redução de custo') { upsOcupados += (2 * reps); upsReais -= (1 * reps); } else { upsOcupados += totalCostMod; upsReais += totalCostMod; } } }); const base = CUSTO_BASE_SKILL_ATIVA[raridade] || 0; const limit = (tipo === 'P' ? Math.ceil(base / 2) : base) + bonusLimiteNerfs; let finalCost = Math.max(0, upsReais); item.dataset.custo = finalCost.toFixed(1); const dispLimit = item.querySelector('.skill-limite-display'); if(dispLimit) dispLimit.innerText = limit.toFixed(1); const inputCusto = item.querySelector('.skill-custo-input'); inputCusto.value = finalCost.toFixed(1); item.querySelector('.skill-gasto-display').innerText = finalCost.toFixed(1); inputCusto.style.color = (upsOcupados > limit) ? 'red' : 'inherit'; item.querySelector('.skill-gasto-display').style.color = (upsOcupados > limit) ? 'red' : 'var(--cor-sucesso)'; }
+
+function handleSkillChange(el) { 
+    const item = el.closest('.skill-item'); 
+    // Como removemos os selects de Recurso e Tipo, só monitoramos Raridade
+    if (el.classList.contains('skill-raridade-select')) { 
+        item.dataset.raridade = el.value; 
+        organizarSkillsVisualmente(); 
+        calcularCustoSkill(item); 
+    } 
+    calcularSkills(); 
+    salvarAutomaticamente(); 
+}
+
+function calcularCustoSkill(item) { 
+    const raridade = item.querySelector('.skill-raridade-select').value; 
+    // AGORA LEMOS O TIPO DO DATASET, POIS NÃO TEM MAIS SELECT
+    const tipo = item.dataset.tipo; 
+    
+    let upsOcupados = 0; let upsReais = 0; let bonusLimiteNerfs = 0; 
+    item.querySelectorAll('.modifier-entry').forEach(e => { const cat = e.dataset.category; const nome = e.dataset.modName; const baseCost = parseFloat(e.dataset.baseCost) || 0; const reps = parseInt(e.dataset.repetitions) || 1; const totalCostMod = baseCost * reps; if (cat === 'Efeitos Adversos (Nerfs)') { bonusLimiteNerfs += totalCostMod; } else { if (nome === 'Redução de custo') { upsOcupados += (2 * reps); upsReais -= (1 * reps); } else { upsOcupados += totalCostMod; upsReais += totalCostMod; } } }); 
+    
+    const base = CUSTO_BASE_SKILL_ATIVA[raridade] || 0; 
+    // Limite: Se for passiva, é metade da base.
+    const limit = (tipo === 'P' ? Math.ceil(base / 2) : base) + bonusLimiteNerfs; 
+    
+    let finalCost = Math.max(0, upsReais); 
+    item.dataset.custo = finalCost.toFixed(1); 
+    const dispLimit = item.querySelector('.skill-limite-display'); if(dispLimit) dispLimit.innerText = limit.toFixed(1); 
+    const inputCusto = item.querySelector('.skill-custo-input'); inputCusto.value = finalCost.toFixed(1); 
+    item.querySelector('.skill-gasto-display').innerText = finalCost.toFixed(1); 
+    inputCusto.style.color = (upsOcupados > limit) ? 'red' : 'inherit'; 
+    item.querySelector('.skill-gasto-display').style.color = (upsOcupados > limit) ? 'red' : 'var(--cor-sucesso)'; 
+}
+
 function adicionarSkill() { const container = document.getElementById('container-visualizacao'); const novaSkill = criarSkillElement({ custoRecurso: currentSkillTab, tipo: currentSkillType }); container.appendChild(novaSkill); adicionarModificador(novaSkill.querySelector('.adicionar-mod-btn')); salvarAutomaticamente(); }
 function removerSkill(btn) { btn.closest('.skill-item').remove(); calcularSkills(); organizarSkillsVisualmente(); salvarAutomaticamente(); } 
 function calcularSkills() { let total = 0; document.querySelectorAll('.skill-item').forEach(i => total += parseFloat(i.dataset.custo) || 0); }
@@ -225,97 +239,32 @@ function gerarObjetoFicha() {
             secundaria: document.getElementById('titulo-secundaria') ? document.getElementById('titulo-secundaria').value : "Perícias Secundárias",
             terciaria: document.getElementById('titulo-terciaria') ? document.getElementById('titulo-terciaria').value : "Perícias Terciárias"
         },
-        atributos: {}, 
-        batalha: {}, 
-        pericias: { principal: [], secundaria: [], terciaria: [] }, skills: [], inventario: [] 
+        atributos: {}, batalha: {}, pericias: { principal: [], secundaria: [], terciaria: [] }, skills: [], inventario: [] 
     };
-    document.querySelectorAll('.atributo-row').forEach(row => {
-        dados.atributos[row.dataset.nome] = { valor: parseInt(row.querySelector('.atributo-input').value) || 0, uso: parseInt(row.querySelector('.treino-contador').innerText) || 0 };
-    });
-    document.querySelectorAll('.batalha-input').forEach(input => {
-        dados.batalha[input.dataset.id] = input.value;
-    });
-
-    ['principal', 'secundaria', 'terciaria'].forEach(cat => {
-        document.getElementById(`pericias-${cat}`).querySelectorAll('.pericia-item').forEach(item => {
-            dados.pericias[cat].push({ nome: item.querySelector('.pericia-nome').value, raridade: item.querySelector('.pericia-raridade').value, custo: item.dataset.custo });
-        });
-    });
-    document.querySelectorAll('.skill-item').forEach(item => {
-        const mods = []; item.querySelectorAll('.modifier-entry').forEach(entry => { mods.push({ categoria: entry.dataset.category, nome: entry.dataset.modName, rep: parseInt(entry.dataset.repetitions), baseCost: parseFloat(entry.dataset.baseCost) }); });
-        dados.skills.push({ nome: item.querySelector('.skill-nome').value, raridade: item.querySelector('.skill-raridade-select').value, tipo: item.querySelector('.skill-tipo-select').value, custoRecurso: item.querySelector('.skill-custo-recurso-select').value, descricao: item.querySelector('.skill-descricao').value, modificadores: mods });
-    });
-    document.querySelectorAll('#inventario-container .inv-item').forEach(item => {
-        const checkbox = item.querySelector('.inv-equip-check');
-        dados.inventario.push({ categoria: item.dataset.categoria, raridade: item.dataset.raridade, nome: item.dataset.nome, qtd: item.dataset.qtd, desc: item.dataset.desc, extra: item.dataset.extra, equipado: checkbox ? checkbox.checked : false });
-    });
+    document.querySelectorAll('.atributo-row').forEach(row => { dados.atributos[row.dataset.nome] = { valor: parseInt(row.querySelector('.atributo-input').value) || 0, uso: parseInt(row.querySelector('.treino-contador').innerText) || 0 }; });
+    document.querySelectorAll('.batalha-input').forEach(input => { dados.batalha[input.dataset.id] = input.value; });
+    ['principal', 'secundaria', 'terciaria'].forEach(cat => { document.getElementById(`pericias-${cat}`).querySelectorAll('.pericia-item').forEach(item => { dados.pericias[cat].push({ nome: item.querySelector('.pericia-nome').value, raridade: item.querySelector('.pericia-raridade').value, custo: item.dataset.custo }); }); });
+    document.querySelectorAll('.skill-item').forEach(item => { const mods = []; item.querySelectorAll('.modifier-entry').forEach(entry => { mods.push({ categoria: entry.dataset.category, nome: entry.dataset.modName, rep: parseInt(entry.dataset.repetitions), baseCost: parseFloat(entry.dataset.baseCost) }); }); dados.skills.push({ nome: item.querySelector('.skill-nome').value, raridade: item.querySelector('.skill-raridade-select').value, tipo: item.dataset.tipo, custoRecurso: item.dataset.recurso, descricao: item.querySelector('.skill-descricao').value, modificadores: mods }); });
+    document.querySelectorAll('#inventario-container .inv-item').forEach(item => { const checkbox = item.querySelector('.inv-equip-check'); dados.inventario.push({ categoria: item.dataset.categoria, raridade: item.dataset.raridade, nome: item.dataset.nome, qtd: item.dataset.qtd, desc: item.dataset.desc, extra: item.dataset.extra, equipado: checkbox ? checkbox.checked : false }); });
     return dados;
 }
 
 function aplicarDadosNaTela(dados) {
     if(dados.nome) document.getElementById('nome-personagem-input').value = dados.nome;
     if(dados.imagem) document.getElementById('char-image-display').src = dados.imagem;
-    if(dados.titulosPericias) {
-        if(document.getElementById('titulo-principal')) document.getElementById('titulo-principal').value = dados.titulosPericias.principal || "Perícias Principais";
-        if(document.getElementById('titulo-secundaria')) document.getElementById('titulo-secundaria').value = dados.titulosPericias.secundaria || "Perícias Secundárias";
-        if(document.getElementById('titulo-terciaria')) document.getElementById('titulo-terciaria').value = dados.titulosPericias.terciaria || "Perícias Terciárias";
-    }
-    if(dados.cabecalho) {
-        if(document.getElementById('cabecalho-talento')) document.getElementById('cabecalho-talento').value = dados.cabecalho.talento || "";
-        if(document.getElementById('cabecalho-ascensao')) document.getElementById('cabecalho-ascensao').value = dados.cabecalho.ascensao || "";
-        if(document.getElementById('cabecalho-racial')) document.getElementById('cabecalho-racial').value = dados.cabecalho.racial || "";
-        if(document.getElementById('cabecalho-info')) document.getElementById('cabecalho-info').value = dados.cabecalho.info || "";
-        document.querySelectorAll('.auto-resize').forEach(el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; });
-    }
-    if (dados.atributos) {
-        document.querySelectorAll('.atributo-row').forEach(row => {
-            const nomeAttr = row.dataset.nome;
-            if (dados.atributos[nomeAttr]) {
-                let valor = typeof dados.atributos[nomeAttr] === 'object' ? dados.atributos[nomeAttr].valor : dados.atributos[nomeAttr];
-                let uso = typeof dados.atributos[nomeAttr] === 'object' ? dados.atributos[nomeAttr].uso : 0;
-                row.querySelector('.atributo-input').value = valor;
-                row.querySelector('.treino-contador').innerText = uso;
-            }
-        });
-    }
-    if (dados.batalha) {
-        document.querySelectorAll('.batalha-input').forEach(input => {
-            if(dados.batalha[input.dataset.id]) input.value = dados.batalha[input.dataset.id];
-        });
-    }
-
-    ['principal', 'secundaria', 'terciaria'].forEach(cat => {
-        const container = document.getElementById(`pericias-${cat}`); container.innerHTML = '';
-        if(dados.pericias && dados.pericias[cat]) dados.pericias[cat].forEach(p => { const novo = criarPericiaElement(cat, p); container.appendChild(novo); calcularCustoPericia(novo.querySelector('.pericia-raridade')); });
-    });
-    document.getElementById('container-visualizacao').innerHTML = ''; document.getElementById('skills-storage').innerHTML = '';
-    const storage = document.getElementById('skills-storage'); if(dados.skills) dados.skills.forEach(s => storage.appendChild(criarSkillElement(s)));
-    organizarSkillsVisualmente();
-    const invContainer = document.getElementById('inventario-container'); invContainer.innerHTML = '';
-    if(dados.inventario) dados.inventario.forEach(item => criarElementoItem(invContainer, item));
+    if(dados.titulosPericias) { if(document.getElementById('titulo-principal')) document.getElementById('titulo-principal').value = dados.titulosPericias.principal || "Perícias Principais"; if(document.getElementById('titulo-secundaria')) document.getElementById('titulo-secundaria').value = dados.titulosPericias.secundaria || "Perícias Secundárias"; if(document.getElementById('titulo-terciaria')) document.getElementById('titulo-terciaria').value = dados.titulosPericias.terciaria || "Perícias Terciárias"; }
+    if(dados.cabecalho) { if(document.getElementById('cabecalho-talento')) document.getElementById('cabecalho-talento').value = dados.cabecalho.talento || ""; if(document.getElementById('cabecalho-ascensao')) document.getElementById('cabecalho-ascensao').value = dados.cabecalho.ascensao || ""; if(document.getElementById('cabecalho-racial')) document.getElementById('cabecalho-racial').value = dados.cabecalho.racial || ""; if(document.getElementById('cabecalho-info')) document.getElementById('cabecalho-info').value = dados.cabecalho.info || ""; document.querySelectorAll('.auto-resize').forEach(el => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }); }
+    if (dados.atributos) { document.querySelectorAll('.atributo-row').forEach(row => { const nomeAttr = row.dataset.nome; if (dados.atributos[nomeAttr]) { let valor = typeof dados.atributos[nomeAttr] === 'object' ? dados.atributos[nomeAttr].valor : dados.atributos[nomeAttr]; let uso = typeof dados.atributos[nomeAttr] === 'object' ? dados.atributos[nomeAttr].uso : 0; row.querySelector('.atributo-input').value = valor; row.querySelector('.treino-contador').innerText = uso; } }); }
+    if (dados.batalha) { document.querySelectorAll('.batalha-input').forEach(input => { if(dados.batalha[input.dataset.id]) input.value = dados.batalha[input.dataset.id]; }); }
+    ['principal', 'secundaria', 'terciaria'].forEach(cat => { const container = document.getElementById(`pericias-${cat}`); container.innerHTML = ''; if(dados.pericias && dados.pericias[cat]) dados.pericias[cat].forEach(p => { const novo = criarPericiaElement(cat, p); container.appendChild(novo); calcularCustoPericia(novo.querySelector('.pericia-raridade')); }); });
+    document.getElementById('container-visualizacao').innerHTML = ''; document.getElementById('skills-storage').innerHTML = ''; const storage = document.getElementById('skills-storage'); if(dados.skills) dados.skills.forEach(s => storage.appendChild(criarSkillElement(s))); organizarSkillsVisualmente();
+    const invContainer = document.getElementById('inventario-container'); invContainer.innerHTML = ''; if(dados.inventario) dados.inventario.forEach(item => criarElementoItem(invContainer, item));
     atualizarSistemaCompleto();
 }
 
-function baixarFicha() {
-    const dados = gerarObjetoFicha(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" })); a.download = (dados.nome || "Ficha") + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-}
-function carregarFicha(event) {
-    const file = event.target.files[0]; if (!file) return; const reader = new FileReader();
-    reader.onload = function(e) { try { const dados = JSON.parse(e.target.result); aplicarDadosNaTela(dados); salvarAutomaticamente(); alert("Ficha carregada com sucesso!"); } catch (err) { console.error(err); alert("Erro ao ler o arquivo JSON: " + err.message); } }
-    reader.readAsText(file);
-}
+function baixarFicha() { const dados = gerarObjetoFicha(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(dados, null, 2)], { type: "application/json" })); a.download = (dados.nome || "Ficha") + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+function carregarFicha(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const dados = JSON.parse(e.target.result); aplicarDadosNaTela(dados); salvarAutomaticamente(); alert("Ficha carregada com sucesso!"); } catch (err) { console.error(err); alert("Erro ao ler o arquivo JSON: " + err.message); } }; reader.readAsText(file); }
 function rolarD20() { const resultado = Math.floor(Math.random() * 20) + 1; let msg = ""; if (resultado === 20) msg = " (CRÍTICO!)"; else if (resultado === 1) msg = " (FALHA!)"; alert(`🎲 Resultado D20: ${resultado}${msg}`); }
-
-// --- INICIALIZAÇÃO ---
-window.addEventListener('DOMContentLoaded', () => {
-    carregarDadosAutomaticos();
-    document.querySelectorAll('input, textarea, select').forEach(el => { el.addEventListener('input', salvarAutomaticamente); el.addEventListener('change', salvarAutomaticamente); });
-    document.querySelectorAll('.atributo-row').forEach(row => { const treinarBtn = row.querySelector('.treinar-btn'); if (treinarBtn) treinarBtn.addEventListener('click', () => gerenciarClickTreino(treinarBtn)); });
-    const invSelect = document.getElementById('inv-categoria'); if(invSelect) { invSelect.addEventListener('change', handleInventarioCategoryChange); handleInventarioCategoryChange(); }
-    document.querySelectorAll('.auto-resize').forEach(textarea => { textarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; }); });
-    organizarSkillsVisualmente();
-    atualizarSistemaCompleto();
-});
 
 // --- FIREBASE E RECURSOS ---
 const firebaseConfig = {

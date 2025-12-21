@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ficha RPG</title>
+    <title>Ficha Cyberpunk</title>
     <link rel="stylesheet" href="stilus.css">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
@@ -55,51 +55,50 @@
     <div class="container">
         <h1>Ficha de Personagem</h1>
 
-        <div class="status-box ficha-header-box">
-            <div class="header-layout">
-                <div class="header-avatar-area">
-                    <div class="avatar-wrapper">
-                        <img id="char-image-display" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzFDMUMzQSIgc3Ryb2tlPSIjMDBGRkZGIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI0Ii8+PHBhdGggZD0iTTQgMjF2LTFhNCA0IDAgMCAxIDQtNGg4YTQgNCAwIDAgMSA0IDR2MSIvPjwvc3ZnPg==" alt="Avatar" onclick="document.getElementById('char-image-upload').click()">
-                        <div class="avatar-overlay" onclick="document.getElementById('char-image-upload').click()">📷</div>
+        <div class="header-split-container">
+            
+            <div class="status-box header-avatar-box">
+                <div class="avatar-wrapper">
+                    <img id="char-image-display" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzFDMUMzQSIgc3Ryb2tlPSIjMDBGRkZGIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI0Ii8+PHBhdGggZD0iTTQgMjF2LTFhNCA0IDAgMCAxIDQtNGg4YTQgNCAwIDAgMSA0IDR2MSIvPjwvc3ZnPg==" alt="Avatar" onclick="document.getElementById('char-image-upload').click()">
+                    <div class="avatar-overlay" onclick="document.getElementById('char-image-upload').click()">📷</div>
+                </div>
+                <input type="file" id="char-image-upload" accept="image/*" onchange="carregarImagemPersonagem(event)">
+            </div>
+
+            <div class="status-box header-info-box">
+                <div class="nome-input-group" style="margin-bottom: 10px;">
+                    <input type="text" id="nome-personagem-input" placeholder="NOME DO PERSONAGEM" style="width: 100%; font-size: 1.4rem; height: 40px;">
+                    
+                    <div class="dropdown-menu-container">
+                        <button onclick="toggleMenu()" class="mod-btn menu-btn" style="height: 40px; width: 30px; display: flex; align-items: center; justify-content: center;">⋮</button>
+                        <div id="menu-dropdown" class="dropdown-content">
+                            <a href="#" onclick="baixarFicha()">💾 Baixar Ficha</a>
+                            <a href="#" onclick="document.getElementById('upload-json').click()">📂 Carregar Ficha</a>
+                            <a href="#" onclick="abrirModalNuvem()">☁️ Salvar na Nuvem</a>
+                            <a href="#" onclick="gerarPDF()">📄 Exportar PDF</a>
+                            <hr style="border-color: #444; margin: 5px 0;">
+                            <a href="#" onclick="fazerLogout()" style="color: var(--cor-perigo);">❌ Sair</a>
+                        </div>
+                        <input type="file" id="upload-json" style="display: none;" accept=".json" onchange="carregarFicha(event)">
                     </div>
-                    <input type="file" id="char-image-upload" accept="image/*" onchange="carregarImagemPersonagem(event)">
                 </div>
 
-                <div class="header-data-area">
-                    <div class="nome-input-group">
-                        <input type="text" id="nome-personagem-input" placeholder="NOME DO PERSONAGEM" style="width: 100%; font-size: 1.2rem;">
-                        
-                        <div class="dropdown-menu-container">
-                            <button onclick="toggleMenu()" class="mod-btn menu-btn">⋮</button>
-                            <div id="menu-dropdown" class="dropdown-content">
-                                <a href="#" onclick="baixarFicha()">💾 Baixar Ficha</a>
-                                <a href="#" onclick="document.getElementById('upload-json').click()">📂 Carregar Ficha</a>
-                                <a href="#" onclick="abrirModalNuvem()">☁️ Salvar na Nuvem</a>
-                                <a href="#" onclick="gerarPDF()">📄 Exportar PDF</a>
-                                <hr style="border-color: #444; margin: 5px 0;">
-                                <a href="#" onclick="fazerLogout()" style="color: var(--cor-perigo);">❌ Sair</a>
-                            </div>
-                            <input type="file" id="upload-json" style="display: none;" accept=".json" onchange="carregarFicha(event)">
-                        </div>
+                <div class="header-info-row">
+                    <div class="info-group">
+                        <label>Talento</label>
+                        <textarea id="cabecalho-talento" class="auto-resize" rows="1"></textarea>
                     </div>
-
-                    <div class="header-info-row">
-                        <div class="info-group">
-                            <label>Talento</label>
-                            <textarea id="cabecalho-talento" class="auto-resize" rows="1"></textarea>
-                        </div>
-                        <div class="info-group">
-                            <label>Ascensão</label>
-                            <textarea id="cabecalho-ascensao" class="auto-resize" rows="1"></textarea>
-                        </div>
-                        <div class="info-group">
-                            <label>Racial</label>
-                            <textarea id="cabecalho-racial" class="auto-resize" rows="1"></textarea>
-                        </div>
-                        <div class="info-group" style="flex: 2;">
-                            <label>Info</label>
-                            <textarea id="cabecalho-info" class="auto-resize" rows="1"></textarea>
-                        </div>
+                    <div class="info-group">
+                        <label>Ascensão</label>
+                        <textarea id="cabecalho-ascensao" class="auto-resize" rows="1"></textarea>
+                    </div>
+                    <div class="info-group">
+                        <label>Racial</label>
+                        <textarea id="cabecalho-racial" class="auto-resize" rows="1"></textarea>
+                    </div>
+                    <div class="info-group" style="flex: 2;">
+                        <label>Info</label>
+                        <textarea id="cabecalho-info" class="auto-resize" rows="1"></textarea>
                     </div>
                 </div>
             </div>
