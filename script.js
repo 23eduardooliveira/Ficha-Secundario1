@@ -1,5 +1,8 @@
 /* ================================================================================
-   SCRIPT.JS - VERSÃO FINAL (SEM CAIXAS REDUNDANTES NAS SKILLS)
+   SCRIPT.JS - VERSÃO COMPLETA (FINALIZADA)
+   - Treinamentos corrigidos
+   - Layout de Skills ajustado
+   - Batalha e Radar integrados
    ================================================================================ */
 
 window.regra = {};             
@@ -56,14 +59,97 @@ function mudarAbaPrincipal(aba) {
 function salvarAutomaticamente() { const dados = gerarObjetoFicha(); localStorage.setItem(STORAGE_KEY, JSON.stringify(dados)); }
 function carregarDadosAutomaticos() { const dadosSalvos = localStorage.getItem(STORAGE_KEY); if (dadosSalvos) { try { const dados = JSON.parse(dadosSalvos); aplicarDadosNaTela(dados); } catch (e) { console.error("Erro ao carregar auto-save", e); } } }
 
-// --- ATRIBUTOS ---
-function getAttrValue(name) { const row = document.querySelector(`.atributo-row[data-nome="${name}"]`); if (!row) return 0; const input = row.querySelector('.atributo-input'); return parseInt(input ? input.value : 0) || 0; }
-function incrementAttr(button) { const input = button.closest('.atributo-input-group').querySelector('.atributo-input'); let value = parseInt(input.value) || 0; input.value = value + 1; atualizarSistemaCompleto(); salvarAutomaticamente(); }
-function decrementAttr(button) { const input = button.closest('.atributo-input-group').querySelector('.atributo-input'); let value = parseInt(input.value) || 0; if (value > 1) { input.value = value - 1; atualizarSistemaCompleto(); salvarAutomaticamente(); } }
-function gerenciarClickTreino(btn) { const row = btn.closest('.atributo-row'); const contadorSpan = row.querySelector('.treino-contador'); const inputAttr = row.querySelector('.atributo-input'); let usoAtual = parseInt(contadorSpan.innerText) || 0; let valorAtributo = parseInt(inputAttr.value) || 0; if (usoAtual >= valorAtributo) aplicarTreino(btn); else alterarUsoAtributo(row, 1); }
-function alterarUsoAtributo(row, valor) { const contadorSpan = row.querySelector('.treino-contador'); if (!contadorSpan) return; let usoAtual = parseInt(contadorSpan.innerText) || 0; usoAtual += valor; contadorSpan.innerText = Math.max(0, usoAtual); verificarTreinoAtributo(row); salvarAutomaticamente(); }
-function verificarTreinoAtributo(row) { const inputAttr = row.querySelector('.atributo-input'); const valorAtributo = parseInt(inputAttr.value) || 0; const contadorSpan = row.querySelector('.treino-contador'); const usoAtributo = parseInt(contadorSpan.innerText) || 0; const atributoValorDisplay = row.querySelector('.atributo-valor-display'); const statusSpan = row.querySelector('.msg-status'); const treinarBtn = row.querySelector('.treinar-btn'); if (atributoValorDisplay) atributoValorDisplay.innerText = valorAtributo; if (!treinarBtn) return; if (usoAtributo >= valorAtributo && valorAtributo > 0) { row.classList.add('inspirado'); if (statusSpan) { statusSpan.textContent = 'INSPIRADO!'; statusSpan.style.color = 'var(--cor-alerta)'; } treinarBtn.innerText = "UP"; treinarBtn.classList.add('aplicar-pontos-btn'); treinarBtn.disabled = false; } else { row.classList.remove('inspirado'); if (statusSpan) { statusSpan.textContent = ''; } treinarBtn.innerText = "Treinar"; treinarBtn.classList.remove('aplicar-pontos-btn'); treinarBtn.disabled = false; } }
-function aplicarTreino(btn) { const row = btn.closest('.atributo-row'); const inputAttr = row.querySelector('.atributo-input'); const contadorSpan = row.querySelector('.treino-contador'); let valorAtual = parseInt(inputAttr.value) || 0; inputAttr.value = valorAtual + 1; contadorSpan.innerText = '0'; atualizarSistemaCompleto(); salvarAutomaticamente(); }
+// --- ATRIBUTOS & TREINO (CORRIGIDO) ---
+function getAttrValue(name) { 
+    const row = document.querySelector(`.atributo-row[data-nome="${name}"]`); 
+    if (!row) return 0; 
+    const input = row.querySelector('.atributo-input'); 
+    return parseInt(input ? input.value : 0) || 0; 
+}
+
+function incrementAttr(button) { 
+    const input = button.closest('.atributo-input-group').querySelector('.atributo-input'); 
+    let value = parseInt(input.value) || 0; 
+    input.value = value + 1; 
+    atualizarSistemaCompleto(); 
+    salvarAutomaticamente(); 
+}
+
+function decrementAttr(button) { 
+    const input = button.closest('.atributo-input-group').querySelector('.atributo-input'); 
+    let value = parseInt(input.value) || 0; 
+    if (value > 1) { 
+        input.value = value - 1; 
+        atualizarSistemaCompleto(); 
+        salvarAutomaticamente(); 
+    } 
+}
+
+function gerenciarClickTreino(btn) { 
+    const row = btn.closest('.atributo-row'); 
+    const contadorSpan = row.querySelector('.treino-contador'); 
+    const inputAttr = row.querySelector('.atributo-input'); 
+    
+    let usoAtual = parseInt(contadorSpan.innerText) || 0; 
+    let valorAtributo = parseInt(inputAttr.value) || 0; 
+    
+    if (usoAtual >= valorAtributo) {
+        aplicarTreino(btn); 
+    } else {
+        alterarUsoAtributo(row, 1); 
+    }
+}
+
+function alterarUsoAtributo(row, valor) { 
+    const contadorSpan = row.querySelector('.treino-contador'); 
+    if (!contadorSpan) return; 
+    
+    let usoAtual = parseInt(contadorSpan.innerText) || 0; 
+    usoAtual += valor; 
+    
+    contadorSpan.innerText = Math.max(0, usoAtual); 
+    verificarTreinoAtributo(row); 
+    salvarAutomaticamente(); 
+}
+
+function verificarTreinoAtributo(row) { 
+    const inputAttr = row.querySelector('.atributo-input'); 
+    const valorAtributo = parseInt(inputAttr.value) || 0; 
+    const contadorSpan = row.querySelector('.treino-contador'); 
+    const usoAtributo = parseInt(contadorSpan.innerText) || 0; 
+    const atributoValorDisplay = row.querySelector('.atributo-valor-display'); 
+    const statusSpan = row.querySelector('.msg-status'); 
+    const treinarBtn = row.querySelector('.treinar-btn'); 
+    
+    if (atributoValorDisplay) atributoValorDisplay.innerText = valorAtributo; 
+    if (!treinarBtn) return; 
+    
+    if (usoAtributo >= valorAtributo && valorAtributo > 0) { 
+        row.classList.add('inspirado'); 
+        if (statusSpan) { statusSpan.textContent = 'INSPIRADO!'; statusSpan.style.color = 'var(--cor-alerta)'; } 
+        treinarBtn.innerText = "UP"; 
+        treinarBtn.classList.add('aplicar-pontos-btn'); 
+        treinarBtn.disabled = false; 
+    } else { 
+        row.classList.remove('inspirado'); 
+        if (statusSpan) { statusSpan.textContent = ''; } 
+        treinarBtn.innerText = "Treinar"; 
+        treinarBtn.classList.remove('aplicar-pontos-btn'); 
+        treinarBtn.disabled = false; 
+    } 
+}
+
+function aplicarTreino(btn) { 
+    const row = btn.closest('.atributo-row'); 
+    const inputAttr = row.querySelector('.atributo-input'); 
+    const contadorSpan = row.querySelector('.treino-contador'); 
+    
+    let valorAtual = parseInt(inputAttr.value) || 0; 
+    inputAttr.value = valorAtual + 1; 
+    contadorSpan.innerText = '0'; 
+    atualizarSistemaCompleto(); 
+    salvarAutomaticamente(); 
+}
 
 function calcularNivelBaseadoEmPontos(gastos) { let nivelBruto = gastos / PONTOS_POR_NIVEL_FLOAT; if (nivelBruto < 0.01) nivelBruto = 0.01; return parseFloat(nivelBruto.toFixed(2)); }
 function atualizarSistemaCompleto() { 
@@ -87,7 +173,7 @@ function criarPericiaElement(categoria, dados) { const item = document.createEle
 function adicionarPericia(cat) { const container = document.getElementById(`pericias-${cat}`); const item = criarPericiaElement(cat, { nome: 'Nova Perícia', raridade: 'Comum' }); container.appendChild(item); calcularCustoPericia(item.querySelector('.pericia-raridade')); salvarAutomaticamente(); }
 function removerPericia(btn) { btn.closest('.pericia-item').remove(); calcularPericias(); salvarAutomaticamente(); }
 
-// --- SKILLS ---
+// --- SKILLS (LAYOUT LADO A LADO) ---
 function mudarAbaSkills(aba) { currentSkillTab = aba; document.querySelectorAll('.skill-tab-btn').forEach(btn => { if(btn.id === `tab-btn-${aba}`) btn.classList.add('active'); else btn.classList.remove('active'); }); organizarSkillsVisualmente(); }
 function mudarSubAba(tipo) { currentSkillType = tipo; document.querySelectorAll('.sub-tab-btn').forEach(btn => { if((tipo === 'A' && btn.innerText === 'Ativas') || (tipo === 'P' && btn.innerText === 'Passivas')) { btn.classList.add('active'); } else { btn.classList.remove('active'); } }); organizarSkillsVisualmente(); }
 function organizarSkillsVisualmente() {
@@ -97,9 +183,6 @@ function organizarSkillsVisualmente() {
     document.querySelector('#tab-btn-ST .tab-count').innerText = `[${countST}]`; document.querySelector('#tab-btn-MP .tab-count').innerText = `[${countMP}]`; document.querySelector('#tab-btn-PSI .tab-count').innerText = `[${countPSI}]`;
 }
 
-
-
-// Função atualizada com o novo Layout HTML
 function criarSkillElement(dados) { 
     const item = document.createElement('div'); item.className = 'skill-item'; 
     const raridade = dados.raridade || 'Comum'; 
@@ -158,8 +241,6 @@ function criarSkillElement(dados) {
     return item;
 }
 
-// ... (Mantenha o resto do código script.js igual) ...
-
 function criarModificadorEntryHTML(modEntryData = {}) {
     const defaultCategory = 'Efeitos Imediatos'; const effectsList = getEffectsForCategory(defaultCategory); const modKey = modEntryData.key || defaultCategory; const modNome = modEntryData.nome || effectsList[0]?.nome || ''; const rep = modEntryData.rep || 1;
     const categoryOptions = getAllModifierCategories().map(cat => `<option value="${cat}" ${cat === modKey ? 'selected' : ''}>${cat}</option>`).join('');
@@ -173,7 +254,6 @@ function removerModificador(btn) { const item = btn.closest('.skill-item'); btn.
 
 function handleSkillChange(el) { 
     const item = el.closest('.skill-item'); 
-    // Como removemos os selects de Recurso e Tipo, só monitoramos Raridade
     if (el.classList.contains('skill-raridade-select')) { 
         item.dataset.raridade = el.value; 
         organizarSkillsVisualmente(); 
@@ -185,14 +265,12 @@ function handleSkillChange(el) {
 
 function calcularCustoSkill(item) { 
     const raridade = item.querySelector('.skill-raridade-select').value; 
-    // AGORA LEMOS O TIPO DO DATASET, POIS NÃO TEM MAIS SELECT
     const tipo = item.dataset.tipo; 
     
     let upsOcupados = 0; let upsReais = 0; let bonusLimiteNerfs = 0; 
     item.querySelectorAll('.modifier-entry').forEach(e => { const cat = e.dataset.category; const nome = e.dataset.modName; const baseCost = parseFloat(e.dataset.baseCost) || 0; const reps = parseInt(e.dataset.repetitions) || 1; const totalCostMod = baseCost * reps; if (cat === 'Efeitos Adversos (Nerfs)') { bonusLimiteNerfs += totalCostMod; } else { if (nome === 'Redução de custo') { upsOcupados += (2 * reps); upsReais -= (1 * reps); } else { upsOcupados += totalCostMod; upsReais += totalCostMod; } } }); 
     
     const base = CUSTO_BASE_SKILL_ATIVA[raridade] || 0; 
-    // Limite: Se for passiva, é metade da base.
     const limit = (tipo === 'P' ? Math.ceil(base / 2) : base) + bonusLimiteNerfs; 
     
     let finalCost = Math.max(0, upsReais); 
@@ -290,3 +368,14 @@ function carregarDaNuvem(idDoc) { db.collection("fichas").doc(idDoc).get().then(
 function deletarDaNuvem(idDoc) { if(confirm("Apagar ficha da nuvem?")) { db.collection("fichas").doc(idDoc).delete().then(() => listarFichasNuvem()); } }
 function atualizarGrafico() { const ctx = document.getElementById('graficoAtributos'); if (!ctx) return; const dados = [ getAttrValue("Forca"), getAttrValue("Destreza"), getAttrValue("Agilidade"), getAttrValue("Resistencia"), getAttrValue("Espírito"), getAttrValue("Carisma"), getAttrValue("Inteligencia") ]; if (graficoInstance) { graficoInstance.data.datasets[0].data = dados; graficoInstance.update(); return; } graficoInstance = new Chart(ctx, { type: 'radar', data: { labels: ['FOR', 'DES', 'AGI', 'RES', 'ESP', 'CAR', 'INT'], datasets: [{ label: 'Nível', data: dados, backgroundColor: 'rgba(0, 255, 255, 0.2)', borderColor: '#00FFFF', borderWidth: 2, pointBackgroundColor: '#fff', pointBorderColor: '#00FFFF' }] }, options: { scales: { r: { angleLines: { color: '#444' }, grid: { color: '#333' }, pointLabels: { color: '#00FF7F', font: { size: 12, family: 'Consolas' } }, ticks: { display: false, backdropColor: 'transparent' }, suggestedMin: 0, suggestedMax: 10 } }, plugins: { legend: { display: false } } } }); }
 function gerarPDF() { const elemento = document.querySelector(".container"); const opt = { margin: [5, 5, 5, 5], filename: 'Ficha_Cyberpunk.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, backgroundColor: '#0A0A1F', useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; html2pdf().set(opt).from(elemento).save(); }
+
+// --- INICIALIZAÇÃO ---
+window.addEventListener('DOMContentLoaded', () => {
+    carregarDadosAutomaticos();
+    document.querySelectorAll('input, textarea, select').forEach(el => { el.addEventListener('input', salvarAutomaticamente); el.addEventListener('change', salvarAutomaticamente); });
+    // O LISTENER DE TREINO FOI REMOVIDO POIS AGORA USAMOS ONCLICK
+    const invSelect = document.getElementById('inv-categoria'); if(invSelect) { invSelect.addEventListener('change', handleInventarioCategoryChange); handleInventarioCategoryChange(); }
+    document.querySelectorAll('.auto-resize').forEach(textarea => { textarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; }); });
+    organizarSkillsVisualmente();
+    atualizarSistemaCompleto();
+});
