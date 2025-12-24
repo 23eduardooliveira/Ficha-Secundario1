@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ficha Cyberpunk</title>
+    <title>Ficha RPG</title>
     <link rel="stylesheet" href="stilus.css">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
@@ -104,11 +104,43 @@
             </div>
         </div>
 
-        <div class="recurso-box">
-            <div class="recurso-item">HP: <span id="hp-display">0</span></div>
-            <div class="recurso-item">ST: <span id="st-display">0</span></div>
-            <div class="recurso-item">MP: <span id="mp-display">0</span></div>
-            <div class="recurso-item">PSI: <span id="psi-display">0</span></div>
+       <div class="recurso-box-container">
+            <div class="recurso-row">
+                <div class="rec-header"><span>HP</span><span class="rec-values"><span id="hp-atual">0</span>/<span id="hp-max">0</span></span></div>
+                <div class="rec-bar-container"><div id="hp-bar-fill" class="rec-bar-fill hp-fill"></div></div>
+                <div class="rec-controls">
+                    <input type="number" id="mod-hp" class="rec-input" placeholder="Qtd">
+                    <button class="rec-btn-mini rec-btn-danger" onclick="alterarRecurso('hp', -1)">-</button>
+                    <button class="rec-btn-mini rec-btn-success" onclick="alterarRecurso('hp', 1)">+</button>
+                </div>
+            </div>
+            <div class="recurso-row">
+                <div class="rec-header"><span>ST</span><span class="rec-values"><span id="st-atual">0</span>/<span id="st-max">0</span></span></div>
+                <div class="rec-bar-container"><div id="st-bar-fill" class="rec-bar-fill st-fill"></div></div>
+                <div class="rec-controls">
+                    <input type="number" id="mod-st" class="rec-input">
+                    <button class="rec-btn-mini rec-btn-danger" onclick="alterarRecurso('st', -1)">-</button>
+                    <button class="rec-btn-mini rec-btn-success" onclick="alterarRecurso('st', 1)">+</button>
+                </div>
+            </div>
+            <div class="recurso-row">
+                <div class="rec-header"><span>MP</span><span class="rec-values"><span id="mp-atual">0</span>/<span id="mp-max">0</span></span></div>
+                <div class="rec-bar-container"><div id="mp-bar-fill" class="rec-bar-fill mp-fill"></div></div>
+                <div class="rec-controls">
+                    <input type="number" id="mod-mp" class="rec-input">
+                    <button class="rec-btn-mini rec-btn-danger" onclick="alterarRecurso('mp', -1)">-</button>
+                    <button class="rec-btn-mini rec-btn-success" onclick="alterarRecurso('mp', 1)">+</button>
+                </div>
+            </div>
+            <div class="recurso-row">
+                <div class="rec-header"><span>PSI</span><span class="rec-values"><span id="psi-atual">0</span>/<span id="psi-max">0</span></span></div>
+                <div class="rec-bar-container"><div id="psi-bar-fill" class="rec-bar-fill psi-fill"></div></div>
+                <div class="rec-controls">
+                    <input type="number" id="mod-psi" class="rec-input">
+                    <button class="rec-btn-mini rec-btn-danger" onclick="alterarRecurso('psi', -1)">-</button>
+                    <button class="rec-btn-mini rec-btn-success" onclick="alterarRecurso('psi', 1)">+</button>
+                </div>
+            </div>
         </div>
 
         <div class="flex-container">

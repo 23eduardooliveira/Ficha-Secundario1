@@ -1,8 +1,5 @@
 /* ================================================================================
-   SCRIPT.JS - VERSÃO COMPLETA (FINALIZADA)
-   - Treinamentos corrigidos
-   - Layout de Skills ajustado
-   - Batalha e Radar integrados
+   SCRIPT.JS - VERSÃO FINAL (SEM CAIXAS REDUNDANTES NAS SKILLS)
    ================================================================================ */
 
 window.regra = {};             
@@ -59,97 +56,14 @@ function mudarAbaPrincipal(aba) {
 function salvarAutomaticamente() { const dados = gerarObjetoFicha(); localStorage.setItem(STORAGE_KEY, JSON.stringify(dados)); }
 function carregarDadosAutomaticos() { const dadosSalvos = localStorage.getItem(STORAGE_KEY); if (dadosSalvos) { try { const dados = JSON.parse(dadosSalvos); aplicarDadosNaTela(dados); } catch (e) { console.error("Erro ao carregar auto-save", e); } } }
 
-// --- ATRIBUTOS & TREINO (CORRIGIDO) ---
-function getAttrValue(name) { 
-    const row = document.querySelector(`.atributo-row[data-nome="${name}"]`); 
-    if (!row) return 0; 
-    const input = row.querySelector('.atributo-input'); 
-    return parseInt(input ? input.value : 0) || 0; 
-}
-
-function incrementAttr(button) { 
-    const input = button.closest('.atributo-input-group').querySelector('.atributo-input'); 
-    let value = parseInt(input.value) || 0; 
-    input.value = value + 1; 
-    atualizarSistemaCompleto(); 
-    salvarAutomaticamente(); 
-}
-
-function decrementAttr(button) { 
-    const input = button.closest('.atributo-input-group').querySelector('.atributo-input'); 
-    let value = parseInt(input.value) || 0; 
-    if (value > 1) { 
-        input.value = value - 1; 
-        atualizarSistemaCompleto(); 
-        salvarAutomaticamente(); 
-    } 
-}
-
-function gerenciarClickTreino(btn) { 
-    const row = btn.closest('.atributo-row'); 
-    const contadorSpan = row.querySelector('.treino-contador'); 
-    const inputAttr = row.querySelector('.atributo-input'); 
-    
-    let usoAtual = parseInt(contadorSpan.innerText) || 0; 
-    let valorAtributo = parseInt(inputAttr.value) || 0; 
-    
-    if (usoAtual >= valorAtributo) {
-        aplicarTreino(btn); 
-    } else {
-        alterarUsoAtributo(row, 1); 
-    }
-}
-
-function alterarUsoAtributo(row, valor) { 
-    const contadorSpan = row.querySelector('.treino-contador'); 
-    if (!contadorSpan) return; 
-    
-    let usoAtual = parseInt(contadorSpan.innerText) || 0; 
-    usoAtual += valor; 
-    
-    contadorSpan.innerText = Math.max(0, usoAtual); 
-    verificarTreinoAtributo(row); 
-    salvarAutomaticamente(); 
-}
-
-function verificarTreinoAtributo(row) { 
-    const inputAttr = row.querySelector('.atributo-input'); 
-    const valorAtributo = parseInt(inputAttr.value) || 0; 
-    const contadorSpan = row.querySelector('.treino-contador'); 
-    const usoAtributo = parseInt(contadorSpan.innerText) || 0; 
-    const atributoValorDisplay = row.querySelector('.atributo-valor-display'); 
-    const statusSpan = row.querySelector('.msg-status'); 
-    const treinarBtn = row.querySelector('.treinar-btn'); 
-    
-    if (atributoValorDisplay) atributoValorDisplay.innerText = valorAtributo; 
-    if (!treinarBtn) return; 
-    
-    if (usoAtributo >= valorAtributo && valorAtributo > 0) { 
-        row.classList.add('inspirado'); 
-        if (statusSpan) { statusSpan.textContent = 'INSPIRADO!'; statusSpan.style.color = 'var(--cor-alerta)'; } 
-        treinarBtn.innerText = "UP"; 
-        treinarBtn.classList.add('aplicar-pontos-btn'); 
-        treinarBtn.disabled = false; 
-    } else { 
-        row.classList.remove('inspirado'); 
-        if (statusSpan) { statusSpan.textContent = ''; } 
-        treinarBtn.innerText = "Treinar"; 
-        treinarBtn.classList.remove('aplicar-pontos-btn'); 
-        treinarBtn.disabled = false; 
-    } 
-}
-
-function aplicarTreino(btn) { 
-    const row = btn.closest('.atributo-row'); 
-    const inputAttr = row.querySelector('.atributo-input'); 
-    const contadorSpan = row.querySelector('.treino-contador'); 
-    
-    let valorAtual = parseInt(inputAttr.value) || 0; 
-    inputAttr.value = valorAtual + 1; 
-    contadorSpan.innerText = '0'; 
-    atualizarSistemaCompleto(); 
-    salvarAutomaticamente(); 
-}
+// --- ATRIBUTOS ---
+function getAttrValue(name) { const row = document.querySelector(`.atributo-row[data-nome="${name}"]`); if (!row) return 0; const input = row.querySelector('.atributo-input'); return parseInt(input ? input.value : 0) || 0; }
+function incrementAttr(button) { const input = button.closest('.atributo-input-group').querySelector('.atributo-input'); let value = parseInt(input.value) || 0; input.value = value + 1; atualizarSistemaCompleto(); salvarAutomaticamente(); }
+function decrementAttr(button) { const input = button.closest('.atributo-input-group').querySelector('.atributo-input'); let value = parseInt(input.value) || 0; if (value > 1) { input.value = value - 1; atualizarSistemaCompleto(); salvarAutomaticamente(); } }
+function gerenciarClickTreino(btn) { const row = btn.closest('.atributo-row'); const contadorSpan = row.querySelector('.treino-contador'); const inputAttr = row.querySelector('.atributo-input'); let usoAtual = parseInt(contadorSpan.innerText) || 0; let valorAtributo = parseInt(inputAttr.value) || 0; if (usoAtual >= valorAtributo) aplicarTreino(btn); else alterarUsoAtributo(row, 1); }
+function alterarUsoAtributo(row, valor) { const contadorSpan = row.querySelector('.treino-contador'); if (!contadorSpan) return; let usoAtual = parseInt(contadorSpan.innerText) || 0; usoAtual += valor; contadorSpan.innerText = Math.max(0, usoAtual); verificarTreinoAtributo(row); salvarAutomaticamente(); }
+function verificarTreinoAtributo(row) { const inputAttr = row.querySelector('.atributo-input'); const valorAtributo = parseInt(inputAttr.value) || 0; const contadorSpan = row.querySelector('.treino-contador'); const usoAtributo = parseInt(contadorSpan.innerText) || 0; const atributoValorDisplay = row.querySelector('.atributo-valor-display'); const statusSpan = row.querySelector('.msg-status'); const treinarBtn = row.querySelector('.treinar-btn'); if (atributoValorDisplay) atributoValorDisplay.innerText = valorAtributo; if (!treinarBtn) return; if (usoAtributo >= valorAtributo && valorAtributo > 0) { row.classList.add('inspirado'); if (statusSpan) { statusSpan.textContent = 'INSPIRADO!'; statusSpan.style.color = 'var(--cor-alerta)'; } treinarBtn.innerText = "UP"; treinarBtn.classList.add('aplicar-pontos-btn'); treinarBtn.disabled = false; } else { row.classList.remove('inspirado'); if (statusSpan) { statusSpan.textContent = ''; } treinarBtn.innerText = "Treinar"; treinarBtn.classList.remove('aplicar-pontos-btn'); treinarBtn.disabled = false; } }
+function aplicarTreino(btn) { const row = btn.closest('.atributo-row'); const inputAttr = row.querySelector('.atributo-input'); const contadorSpan = row.querySelector('.treino-contador'); let valorAtual = parseInt(inputAttr.value) || 0; inputAttr.value = valorAtual + 1; contadorSpan.innerText = '0'; atualizarSistemaCompleto(); salvarAutomaticamente(); }
 
 function calcularNivelBaseadoEmPontos(gastos) { let nivelBruto = gastos / PONTOS_POR_NIVEL_FLOAT; if (nivelBruto < 0.01) nivelBruto = 0.01; return parseFloat(nivelBruto.toFixed(2)); }
 function atualizarSistemaCompleto() { 
@@ -162,7 +76,52 @@ function atualizarSistemaCompleto() {
     window.regra = { nivelAtual, gastosAtuais: gastos }; 
     calcularRecursos(); calcularPericias(); calcularSkills(); atualizarGrafico(); 
 }
-function calcularRecursos() { const F = getAttrValue("Forca"); const R = getAttrValue("Resistencia"); const E = getAttrValue("Espírito"); const I = getAttrValue("Inteligencia"); const C = getAttrValue("Carisma"); document.getElementById('hp-display').innerText = R * 4; document.getElementById('st-display').innerText = R * 2 + F; document.getElementById('mp-display').innerText = E * 2 + I; document.getElementById('psi-display').innerText = I * 2 + C; }
+window.recursosAtuais = null; // Inicia null para detectar ficha nova
+
+function calcularRecursos() {
+    const res = getAttrValue("Resistencia") || 1;
+    const forca = getAttrValue("Forca") || 1;
+    const esp = getAttrValue("Espírito") || 1;
+    const int = getAttrValue("Inteligencia") || 1;
+    const car = getAttrValue("Carisma") || 1;
+
+    const maxHP = res * 4;
+    const maxST = (res * 2) + forca;
+    const maxMP = (esp * 2) + int;
+    const maxPSI = (int * 2) + car;
+
+    // SE FOR FICHA NOVA, COMEÇA CHEIO
+    if (window.recursosAtuais === null) {
+        window.recursosAtuais = { hp: maxHP, st: maxST, mp: maxMP, psi: maxPSI };
+    }
+
+    // Atualiza Displays
+    atualizarUI(maxHP, maxST, maxMP, maxPSI);
+}
+
+function atualizarUI(maxHP, maxST, maxMP, maxPSI) {
+    const tipos = ['hp', 'st', 'mp', 'psi'];
+    const maximos = { hp: maxHP, st: maxST, mp: maxMP, psi: maxPSI };
+
+    tipos.forEach(t => {
+        // Garante que não ultrapassa o máximo
+        if (window.recursosAtuais[t] > maximos[t]) window.recursosAtuais[t] = maximos[t];
+        
+        document.getElementById(`${t}-atual`).innerText = window.recursosAtuais[t];
+        document.getElementById(`${t}-max`).innerText = maximos[t];
+        
+        const perc = (window.recursosAtuais[t] / maximos[t]) * 100;
+        document.getElementById(`${t}-bar-fill`).style.width = perc + "%";
+    });
+}
+
+function alterarRecurso(tipo, mult) {
+    const qtd = parseInt(document.getElementById(`mod-${tipo}`).value) || 0;
+    window.recursosAtuais[tipo] += (qtd * mult);
+    document.getElementById(`mod-${tipo}`).value = '';
+    calcularRecursos();
+    salvarAutomaticamente();
+}
 
 // --- PERÍCIAS ---
 function calcularCustoPericia(elemento) { const item = elemento.closest('.pericia-item'); const raridade = item.querySelector('.pericia-raridade').value; item.dataset.custo = CUSTO_RARIDADE[raridade] || 0; calcularPericias(); salvarAutomaticamente(); }
@@ -173,7 +132,7 @@ function criarPericiaElement(categoria, dados) { const item = document.createEle
 function adicionarPericia(cat) { const container = document.getElementById(`pericias-${cat}`); const item = criarPericiaElement(cat, { nome: 'Nova Perícia', raridade: 'Comum' }); container.appendChild(item); calcularCustoPericia(item.querySelector('.pericia-raridade')); salvarAutomaticamente(); }
 function removerPericia(btn) { btn.closest('.pericia-item').remove(); calcularPericias(); salvarAutomaticamente(); }
 
-// --- SKILLS (LAYOUT LADO A LADO) ---
+// --- SKILLS ---
 function mudarAbaSkills(aba) { currentSkillTab = aba; document.querySelectorAll('.skill-tab-btn').forEach(btn => { if(btn.id === `tab-btn-${aba}`) btn.classList.add('active'); else btn.classList.remove('active'); }); organizarSkillsVisualmente(); }
 function mudarSubAba(tipo) { currentSkillType = tipo; document.querySelectorAll('.sub-tab-btn').forEach(btn => { if((tipo === 'A' && btn.innerText === 'Ativas') || (tipo === 'P' && btn.innerText === 'Passivas')) { btn.classList.add('active'); } else { btn.classList.remove('active'); } }); organizarSkillsVisualmente(); }
 function organizarSkillsVisualmente() {
@@ -183,6 +142,13 @@ function organizarSkillsVisualmente() {
     document.querySelector('#tab-btn-ST .tab-count').innerText = `[${countST}]`; document.querySelector('#tab-btn-MP .tab-count').innerText = `[${countMP}]`; document.querySelector('#tab-btn-PSI .tab-count').innerText = `[${countPSI}]`;
 }
 
+// Função para Minimizar/Expandir Skill
+function toggleSkill(btn) {
+    const item = btn.closest('.skill-item');
+    item.classList.toggle('collapsed');
+}
+
+// Função atualizada com o novo Layout HTML
 function criarSkillElement(dados) { 
     const item = document.createElement('div'); item.className = 'skill-item'; 
     const raridade = dados.raridade || 'Comum'; 
@@ -198,7 +164,15 @@ function criarSkillElement(dados) {
 
     item.innerHTML = ` 
         <div class="skill-header-row"> 
+            <button class="toggle-skill-btn" onclick="toggleSkill(this)">▼</button>
+            
             <input type="text" class="skill-nome skill-input-text" value="${dados.nome || 'Nova Skill'}" placeholder="Nome" data-tippy-content="${dados.descricao || 'Sem descrição'}" oninput="this.dataset.tippyContent = this.closest('.skill-item').querySelector('.skill-descricao').value; handleSkillChange(this)"> 
+            
+            <div class="skill-header-info">
+                <span class="header-rarity-display">${raridade}</span>
+                <div class="header-cost-display">Custo: <span class="header-cost-val">0.0</span></div>
+            </div>
+
             <button onclick="removerSkill(this)" class="remover-skill-btn">✕</button> 
         </div> 
         
@@ -207,7 +181,6 @@ function criarSkillElement(dados) {
             
             <div class="skill-stats-column">
                 <select class="skill-raridade-select" onchange="handleSkillChange(this)">${raridadeOptions}</select>
-                
                 <div class="skill-costs-row">
                     <div class="mini-cost-box">
                         <label>Custo</label>
@@ -254,6 +227,7 @@ function removerModificador(btn) { const item = btn.closest('.skill-item'); btn.
 
 function handleSkillChange(el) { 
     const item = el.closest('.skill-item'); 
+    // Como removemos os selects de Recurso e Tipo, só monitoramos Raridade
     if (el.classList.contains('skill-raridade-select')) { 
         item.dataset.raridade = el.value; 
         organizarSkillsVisualmente(); 
@@ -274,12 +248,34 @@ function calcularCustoSkill(item) {
     const limit = (tipo === 'P' ? Math.ceil(base / 2) : base) + bonusLimiteNerfs; 
     
     let finalCost = Math.max(0, upsReais); 
+    
+    // Atualiza dataset e inputs do corpo
     item.dataset.custo = finalCost.toFixed(1); 
-    const dispLimit = item.querySelector('.skill-limite-display'); if(dispLimit) dispLimit.innerText = limit.toFixed(1); 
-    const inputCusto = item.querySelector('.skill-custo-input'); inputCusto.value = finalCost.toFixed(1); 
+    const dispLimit = item.querySelector('.skill-limite-display'); 
+    if(dispLimit) dispLimit.innerText = limit.toFixed(1); 
+    
+    const inputCusto = item.querySelector('.skill-custo-input'); 
+    inputCusto.value = finalCost.toFixed(1); 
     item.querySelector('.skill-gasto-display').innerText = finalCost.toFixed(1); 
+    
+    // Cores de alerta
     inputCusto.style.color = (upsOcupados > limit) ? 'red' : 'inherit'; 
-    item.querySelector('.skill-gasto-display').style.color = (upsOcupados > limit) ? 'red' : 'var(--cor-sucesso)'; 
+    item.querySelector('.skill-gasto-display').style.color = (upsOcupados > limit) ? 'red' : 'var(--cor-sucesso)';
+
+    // --- ATUALIZAÇÃO DO RESUMO NO CABEÇALHO (NOVO) ---
+    const headerRarity = item.querySelector('.header-rarity-display');
+    const headerCostVal = item.querySelector('.header-cost-val');
+    
+    if (headerRarity) {
+        headerRarity.innerText = raridade;
+        // Pinta a raridade com a cor certa usando sua lista de cores
+        headerRarity.style.color = CORES_TEXTO_RARIDADE[raridade] || '#fff';
+    }
+    if (headerCostVal) {
+        headerCostVal.innerText = finalCost.toFixed(1);
+        // Pinta o custo de vermelho se estourar o limite
+        headerCostVal.style.color = (upsOcupados > limit) ? 'red' : 'var(--cor-destaque)';
+    }
 }
 
 function adicionarSkill() { const container = document.getElementById('container-visualizacao'); const novaSkill = criarSkillElement({ custoRecurso: currentSkillTab, tipo: currentSkillType }); container.appendChild(novaSkill); adicionarModificador(novaSkill.querySelector('.adicionar-mod-btn')); salvarAutomaticamente(); }
@@ -368,14 +364,3 @@ function carregarDaNuvem(idDoc) { db.collection("fichas").doc(idDoc).get().then(
 function deletarDaNuvem(idDoc) { if(confirm("Apagar ficha da nuvem?")) { db.collection("fichas").doc(idDoc).delete().then(() => listarFichasNuvem()); } }
 function atualizarGrafico() { const ctx = document.getElementById('graficoAtributos'); if (!ctx) return; const dados = [ getAttrValue("Forca"), getAttrValue("Destreza"), getAttrValue("Agilidade"), getAttrValue("Resistencia"), getAttrValue("Espírito"), getAttrValue("Carisma"), getAttrValue("Inteligencia") ]; if (graficoInstance) { graficoInstance.data.datasets[0].data = dados; graficoInstance.update(); return; } graficoInstance = new Chart(ctx, { type: 'radar', data: { labels: ['FOR', 'DES', 'AGI', 'RES', 'ESP', 'CAR', 'INT'], datasets: [{ label: 'Nível', data: dados, backgroundColor: 'rgba(0, 255, 255, 0.2)', borderColor: '#00FFFF', borderWidth: 2, pointBackgroundColor: '#fff', pointBorderColor: '#00FFFF' }] }, options: { scales: { r: { angleLines: { color: '#444' }, grid: { color: '#333' }, pointLabels: { color: '#00FF7F', font: { size: 12, family: 'Consolas' } }, ticks: { display: false, backdropColor: 'transparent' }, suggestedMin: 0, suggestedMax: 10 } }, plugins: { legend: { display: false } } } }); }
 function gerarPDF() { const elemento = document.querySelector(".container"); const opt = { margin: [5, 5, 5, 5], filename: 'Ficha_Cyberpunk.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, backgroundColor: '#0A0A1F', useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; html2pdf().set(opt).from(elemento).save(); }
-
-// --- INICIALIZAÇÃO ---
-window.addEventListener('DOMContentLoaded', () => {
-    carregarDadosAutomaticos();
-    document.querySelectorAll('input, textarea, select').forEach(el => { el.addEventListener('input', salvarAutomaticamente); el.addEventListener('change', salvarAutomaticamente); });
-    // O LISTENER DE TREINO FOI REMOVIDO POIS AGORA USAMOS ONCLICK
-    const invSelect = document.getElementById('inv-categoria'); if(invSelect) { invSelect.addEventListener('change', handleInventarioCategoryChange); handleInventarioCategoryChange(); }
-    document.querySelectorAll('.auto-resize').forEach(textarea => { textarea.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; }); });
-    organizarSkillsVisualmente();
-    atualizarSistemaCompleto();
-});
