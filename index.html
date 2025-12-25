@@ -3,86 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ficha RPG</title>
+    <title>Grimório RPG - Ficha</title>
+    
     <link rel="stylesheet" href="stilus.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0A0A1F">
+    <meta name="theme-color" content="#1a120b">
     <link rel="apple-touch-icon" href="icon-192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> 
-    <link rel="icon" type="image/png" href="icon-192.png">
-
+    
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-    <script src="https://unpkg.com/@popperjs/core@2"></script>
-    <script src="https://unpkg.com/tippy.js@6"></script>
-    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/animations/scale.css"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
 </head>
 <body>
 
-    <div id="login-modal" class="modal-overlay" style="display: flex;">
-        <div class="modal-content" style="max-width: 350px;">
-            <h2 id="login-title">Acesso RPG</h2>
-            <input type="email" id="email-input" class="inv-input" placeholder="E-mail" style="width: 100%; margin-bottom: 10px;">
-            <input type="password" id="senha-input" class="inv-input" placeholder="Senha" style="width: 100%; margin-bottom: 20px;">
-            <button onclick="fazerLogin()" class="mod-btn" style="width: 100%; margin-bottom: 5px; border-color: var(--cor-destaque);">Entrar</button>
-            <button onclick="criarConta()" class="mod-btn" style="width: 100%; border-color: var(--cor-sucesso);">Criar Conta</button>
-            <p id="msg-erro" style="color: var(--cor-perigo); margin-top: 10px; font-size: 0.8rem;"></p>
+    <div class="dropdown-menu-container" style="position: absolute; top: 10px; right: 10px; z-index: 100;">
+        <button onclick="toggleMenu()" class="menu-btn">📜 Menu</button>
+        <div id="menu-dropdown" class="dropdown-content">
+            <a href="#" onclick="baixarFicha()">💾 Salvar Arquivo</a>
+            <label for="file-upload" style="cursor: pointer; display: block; padding: 10px 15px; border-bottom: 1px solid #5e4b35;">📂 Carregar Arquivo</label>
+            <input type="file" id="file-upload" accept=".json" onchange="carregarFicha(event)" style="display: none;">
+            <a href="#" onclick="abrirModalNuvem()">☁️ Nuvem</a>
+            <a href="#" onclick="gerarPDF()">📄 Exportar PDF</a>
+            <a href="#" onclick="fazerLogout()" style="color: var(--cor-perigo);">❌ Sair</a>
         </div>
     </div>
 
-    <div id="nuvem-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content" style="width: 90%; max-width: 600px;">
-            <h3>Minhas Fichas na Nuvem</h3>
-            <div id="lista-fichas-nuvem" style="max-height: 300px; overflow-y: auto; text-align: left; margin-bottom: 15px;">
-                <p style="color: #aaa;">Carregando...</p>
-            </div>
-            <div class="modal-buttons">
-                <button onclick="fecharModalNuvem()" class="mod-btn">Fechar</button>
-                <button onclick="salvarNovaFichaNuvem()" class="mod-btn" style="border-color: var(--cor-destaque); color: var(--cor-destaque);">☁️ Salvar Atual</button>
-            </div>
-        </div>
-    </div>
+    <h1>Grimório do Personagem</h1>
 
     <div class="container">
-        <h1>Ficha de Personagem</h1>
-
+        
         <div class="header-split-container">
-            
-            <div class="status-box header-avatar-box">
+            <div class="header-avatar-box">
                 <div class="avatar-wrapper">
-                    <img id="char-image-display" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzFDMUMzQSIgc3Ryb2tlPSIjMDBGRkZGIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PGNpcmNsZSBjeD0iMTIiIGN5PSI4IiByPSI0Ii8+PHBhdGggZD0iTTQgMjF2LTFhNCA0IDAgMCAxIDQtNGg4YTQgNCAwIDAgMSA0IDR2MSIvPjwvc3ZnPg==" alt="Avatar" onclick="document.getElementById('char-image-upload').click()">
-                    <div class="avatar-overlay" onclick="document.getElementById('char-image-upload').click()">📷</div>
+                    <img id="char-image-display" src="https://via.placeholder.com/150?text=Retrato" alt="Personagem">
+                    <label for="char-image-upload" class="avatar-overlay">📷</label>
+                    <input type="file" id="char-image-upload" accept="image/*" onchange="carregarImagemPersonagem(event)">
                 </div>
-                <input type="file" id="char-image-upload" accept="image/*" onchange="carregarImagemPersonagem(event)">
             </div>
 
-            <div class="status-box header-info-box">
-                <div class="nome-input-group" style="margin-bottom: 10px;">
-                    <input type="text" id="nome-personagem-input" placeholder="NOME DO PERSONAGEM" style="width: 100%; font-size: 1.4rem; height: 40px;">
-                    
-                    <div class="dropdown-menu-container">
-                        <button onclick="toggleMenu()" class="mod-btn menu-btn" style="height: 40px; width: 30px; display: flex; align-items: center; justify-content: center;">⋮</button>
-                        <div id="menu-dropdown" class="dropdown-content">
-                            <a href="#" onclick="baixarFicha()">💾 Baixar Ficha</a>
-                            <a href="#" onclick="document.getElementById('upload-json').click()">📂 Carregar Ficha</a>
-                            <a href="#" onclick="abrirModalNuvem()">☁️ Salvar na Nuvem</a>
-                            <a href="#" onclick="gerarPDF()">📄 Exportar PDF</a>
-                            <hr style="border-color: #444; margin: 5px 0;">
-                            <a href="#" onclick="fazerLogout()" style="color: var(--cor-perigo);">❌ Sair</a>
-                        </div>
-                        <input type="file" id="upload-json" style="display: none;" accept=".json" onchange="carregarFicha(event)">
-                    </div>
+            <div class="header-info-box">
+                <div class="nome-input-group">
+                    <input type="text" id="nome-personagem-input" placeholder="Nome do Herói">
                 </div>
-
                 <div class="header-info-row">
                     <div class="info-group">
                         <label>Talento</label>
@@ -92,51 +67,76 @@
                         <label>Ascensão</label>
                         <textarea id="cabecalho-ascensao" class="auto-resize" rows="1"></textarea>
                     </div>
+                </div>
+                <div class="header-info-row">
                     <div class="info-group">
                         <label>Racial</label>
                         <textarea id="cabecalho-racial" class="auto-resize" rows="1"></textarea>
                     </div>
-                    <div class="info-group" style="flex: 2;">
-                        <label>Info</label>
+                    <div class="info-group">
+                        <label>Info Extra</label>
                         <textarea id="cabecalho-info" class="auto-resize" rows="1"></textarea>
                     </div>
                 </div>
             </div>
         </div>
 
-       <div class="recurso-box-container">
+        <div class="recurso-box-container">
             <div class="recurso-row">
-                <div class="rec-header"><span>HP</span><span class="rec-values"><span id="hp-atual">0</span>/<span id="hp-max">0</span></span></div>
-                <div class="rec-bar-container"><div id="hp-bar-fill" class="rec-bar-fill hp-fill"></div></div>
+                <div class="rec-header">
+                    <span>Vida (HP)</span>
+                    <span class="rec-values"><span id="hp-atual">0</span>/<span id="hp-max">0</span></span>
+                </div>
+                <div class="rec-bar-container">
+                    <div id="hp-bar-fill" class="rec-bar-fill hp-fill" style="width: 100%;"></div>
+                </div>
                 <div class="rec-controls">
-                    <input type="number" id="mod-hp" class="rec-input" placeholder="Qtd">
+                    <input type="number" id="mod-hp" class="rec-input" placeholder="0">
                     <button class="rec-btn-mini rec-btn-danger" onclick="alterarRecurso('hp', -1)">-</button>
                     <button class="rec-btn-mini rec-btn-success" onclick="alterarRecurso('hp', 1)">+</button>
                 </div>
             </div>
+
             <div class="recurso-row">
-                <div class="rec-header"><span>ST</span><span class="rec-values"><span id="st-atual">0</span>/<span id="st-max">0</span></span></div>
-                <div class="rec-bar-container"><div id="st-bar-fill" class="rec-bar-fill st-fill"></div></div>
+                <div class="rec-header">
+                    <span>Vigor (ST)</span>
+                    <span class="rec-values"><span id="st-atual">0</span>/<span id="st-max">0</span></span>
+                </div>
+                <div class="rec-bar-container">
+                    <div id="st-bar-fill" class="rec-bar-fill st-fill" style="width: 100%;"></div>
+                </div>
                 <div class="rec-controls">
-                    <input type="number" id="mod-st" class="rec-input">
+                    <input type="number" id="mod-st" class="rec-input" placeholder="0">
                     <button class="rec-btn-mini rec-btn-danger" onclick="alterarRecurso('st', -1)">-</button>
                     <button class="rec-btn-mini rec-btn-success" onclick="alterarRecurso('st', 1)">+</button>
                 </div>
             </div>
+
             <div class="recurso-row">
-                <div class="rec-header"><span>MP</span><span class="rec-values"><span id="mp-atual">0</span>/<span id="mp-max">0</span></span></div>
-                <div class="rec-bar-container"><div id="mp-bar-fill" class="rec-bar-fill mp-fill"></div></div>
+                <div class="rec-header">
+                    <span>Mana (MP)</span>
+                    <span class="rec-values"><span id="mp-atual">0</span>/<span id="mp-max">0</span></span>
+                </div>
+                <div class="rec-bar-container">
+                    <div id="mp-bar-fill" class="rec-bar-fill mp-fill" style="width: 100%;"></div>
+                </div>
                 <div class="rec-controls">
-                    <input type="number" id="mod-mp" class="rec-input">
+                    <input type="number" id="mod-mp" class="rec-input" placeholder="0">
                     <button class="rec-btn-mini rec-btn-danger" onclick="alterarRecurso('mp', -1)">-</button>
                     <button class="rec-btn-mini rec-btn-success" onclick="alterarRecurso('mp', 1)">+</button>
                 </div>
             </div>
+
             <div class="recurso-row">
-                <div class="rec-header"><span>PSI</span><span class="rec-values"><span id="psi-atual">0</span>/<span id="psi-max">0</span></span></div>
-                <div class="rec-bar-container"><div id="psi-bar-fill" class="rec-bar-fill psi-fill"></div></div>
+                <div class="rec-header">
+                    <span>Essência (PSI)</span>
+                    <span class="rec-values"><span id="psi-atual">0</span>/<span id="psi-max">0</span></span>
+                </div>
+                <div class="rec-bar-container">
+                    <div id="psi-bar-fill" class="rec-bar-fill psi-fill" style="width: 100%;"></div>
+                </div>
                 <div class="rec-controls">
-                    <input type="number" id="mod-psi" class="rec-input">
+                    <input type="number" id="mod-psi" class="rec-input" placeholder="0">
                     <button class="rec-btn-mini rec-btn-danger" onclick="alterarRecurso('psi', -1)">-</button>
                     <button class="rec-btn-mini rec-btn-success" onclick="alterarRecurso('psi', 1)">+</button>
                 </div>
@@ -144,43 +144,35 @@
         </div>
 
         <div class="flex-container">
+            
             <div class="col-left">
-                
-                <div class="status-box">
-                    <div class="tabs-principal">
-                        <button class="tab-principal-btn active" onclick="mudarAbaPrincipal('atributos')">Atributos</button>
-                        <button class="tab-principal-btn" onclick="mudarAbaPrincipal('batalha')">Batalha</button>
-                        <button class="tab-principal-btn" onclick="mudarAbaPrincipal('radar')">Radar</button>
-                    </div>
+                <div class="tabs-principal">
+                    <button class="tab-principal-btn active" onclick="mudarAbaPrincipal('atributos')">Atributos</button>
+                    <button class="tab-principal-btn" onclick="mudarAbaPrincipal('batalha')">Batalha</button>
+                    <button class="tab-principal-btn" onclick="mudarAbaPrincipal('radar')">Radar</button>
+                </div>
 
-                    <div id="view-atributos" class="tab-content-principal" style="display: block;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px; margin-top: 10px;">
-                            <h3>Base</h3>
-                            <div style="font-size: 0.85rem; color: #aaa;">
-                                Nível: <span id="nivel-display" style="color: var(--cor-destaque); font-weight: bold;">0.00</span> | 
-                                Pontos: <span id="total-pontos">0</span>
-                            </div>
+                <div id="view-atributos" class="tab-content-principal" style="display: block;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--cor-borda-sutil); padding-bottom: 5px;">
+                        <h3>Atributos</h3>
+                        <div style="font-size: 0.9rem;">
+                            Nível: <span id="nivel-display" style="color: var(--cor-titulo); font-weight: bold;">0.00</span> | 
+                            Pontos: <span id="total-pontos">0</span>
                         </div>
-                        
-                        <div class="atributo-row" data-nome="Forca"><label>Força</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
-                        
-                        <div class="atributo-row" data-nome="Destreza"><label>Destreza</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
-                        
-                        <div class="atributo-row" data-nome="Agilidade"><label>Agilidade</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
-                        
-                        <div class="atributo-row" data-nome="Resistencia"><label>Resistência</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
-                        
-                        <div class="atributo-row" data-nome="Espírito"><label>Espírito</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
-                        
-                        <div class="atributo-row" data-nome="Carisma"><label>Carisma</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
-                        
-                        <div class="atributo-row" data-nome="Inteligencia"><label>Inteligência</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> Treino: <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
                     </div>
+                    
+                    <div class="atributo-row" data-nome="Forca"><label>Força</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Destreza"><label>Destreza</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Agilidade"><label>Agilidade</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Resistencia"><label>Resistência</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Espírito"><label>Espírito</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Carisma"><label>Carisma</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
+                    <div class="atributo-row" data-nome="Inteligencia"><label>Inteligência</label><div class="atributo-input-group"><button class="mod-btn compact-btn" onclick="decrementAttr(this)">-</button><input type="number" class="atributo-input" value="1" min="0" readonly><button class="mod-btn compact-btn" onclick="incrementAttr(this)">+</button></div><div class="treino-info"><span class="msg-status"></span> <span class="treino-contador">0</span>/<span class="atributo-valor-display">1</span> <button class="treinar-btn" onclick="gerenciarClickTreino(this)">Treinar</button></div></div>
+                </div>
 
-                    <div id="view-batalha" class="tab-content-principal" style="display: none; padding-top: 10px;">
-                        <h3 style="margin-bottom:10px; text-align:center;">Status de Combate</h3>
-                        
-                        <div class="battle-grid">
+                <div id="view-batalha" class="tab-content-principal" style="display: none; padding-top: 10px;">
+                    <h3 style="text-align:center;">Status de Combate</h3>
+                    <div class="battle-grid">
                             <div class="battle-group"><label>Esquiva</label><input type="text" class="batalha-input" data-id="esquiva"></div>
                             <div class="battle-group"><label>Defesa Fisica</label><input type="text" class="batalha-input" data-id="defesa_fisica"></div>
                             <div class="battle-group"><label>Acerto Fisica</label><input type="text" class="batalha-input" data-id="acerto_fisica"></div>
@@ -203,130 +195,141 @@
 
                             <div class="battle-group"><label>Iniciativa</label><input type="text" class="batalha-input" data-id="Iniciativa"></div>
                         </div>
-                    </div>
-
-                    <div id="view-radar" class="tab-content-principal" style="display: none; text-align: center; padding-top: 10px;">
-                        <h3>Radar de Poder</h3>
-                        <div style="position: relative; height: 300px; width: 100%;">
-                            <canvas id="graficoAtributos"></canvas>
-                        </div>
-                    </div>
-
                 </div>
 
-                <div class="status-box">
-                    <h3>Perícias</h3>
-                    <div class="pericia-header-editavel"><span class="pericia-icone">🥇</span> <input type="text" id="titulo-principal" class="pericia-titulo-input" value="Perícias Principais"> <span style="font-size: 0.8rem; color: #888;">(<span id="pericia-principal-gastos">0</span>/<span id="pericia-principal-pts">0</span>)</span></div>
-                    <div id="pericias-principal"></div>
-                    <button onclick="adicionarPericia('principal')" class="mod-btn compact-btn" style="width:100%; margin-top:5px;">+ Adicionar</button>
-
-                    <div class="pericia-header-editavel"><span class="pericia-icone">🥈</span> <input type="text" id="titulo-secundaria" class="pericia-titulo-input" value="Perícias Secundárias"> <span style="font-size: 0.8rem; color: #888;">(<span id="pericia-secundaria-gastos">0</span>/<span id="pericia-secundaria-pts">0</span>)</span></div>
-                    <div id="pericias-secundaria"></div>
-                    <button onclick="adicionarPericia('secundaria')" class="mod-btn compact-btn" style="width:100%; margin-top:5px;">+ Adicionar</button>
-
-                    <div class="pericia-header-editavel"><span class="pericia-icone">🥉</span> <input type="text" id="titulo-terciaria" class="pericia-titulo-input" value="Perícias Terciárias"> <span style="font-size: 0.8rem; color: #888;">(<span id="pericia-terciaria-gastos">0</span>/<span id="pericia-terciaria-pts">0</span>)</span></div>
-                    <div id="pericias-terciaria"></div>
-                    <button onclick="adicionarPericia('terciaria')" class="mod-btn compact-btn" style="width:100%; margin-top:5px;">+ Adicionar</button>
+                <div id="view-radar" class="tab-content-principal" style="display: none;">
+                    <h3 style="text-align:center;">Gráfico de Atributos</h3>
+                    <div style="background: rgba(255,255,255,0.5); padding: 10px; border-radius: 5px;">
+                        <canvas id="graficoAtributos"></canvas>
+                    </div>
                 </div>
+
+                <hr>
+                <div class="pericia-header-editavel">
+                    <input type="text" id="titulo-principal" class="pericia-titulo-input" value="Perícias Principais">
+                    <span style="font-size:0.8rem;">Pts: <span id="pericia-principal-pts">0</span> | Gasto: <span id="pericia-principal-gastos">0</span></span>
+                    <button onclick="adicionarPericia('principal')" class="mod-btn compact-btn" style="margin-left:auto;">+</button>
+                </div>
+                <div id="pericias-principal"></div>
+
+                <div class="pericia-header-editavel">
+                    <input type="text" id="titulo-secundaria" class="pericia-titulo-input" value="Perícias Secundárias">
+                    <span style="font-size:0.8rem;">Pts: <span id="pericia-secundaria-pts">0</span> | Gasto: <span id="pericia-secundaria-gastos">0</span></span>
+                    <button onclick="adicionarPericia('secundaria')" class="mod-btn compact-btn" style="margin-left:auto;">+</button>
+                </div>
+                <div id="pericias-secundaria"></div>
+
+                <div class="pericia-header-editavel">
+                    <input type="text" id="titulo-terciaria" class="pericia-titulo-input" value="Perícias Terciárias">
+                    <span style="font-size:0.8rem;">Pts: <span id="pericia-terciaria-pts">0</span> | Gasto: <span id="pericia-terciaria-gastos">0</span></span>
+                    <button onclick="adicionarPericia('terciaria')" class="mod-btn compact-btn" style="margin-left:auto;">+</button>
+                </div>
+                <div id="pericias-terciaria"></div>
             </div>
 
             <div class="col-right">
-                
-                <div class="status-box">
-                    <div style="margin-bottom: 10px; border-bottom: 1px solid var(--cor-borda-escura); padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
-                        <h2 style="margin: 0; border: none; padding: 0;">Skills</h2>
-                        <select id="filter-raridade" class="skill-select" onchange="organizarSkillsVisualmente()" style="width: auto; font-size: 0.8rem; background-color: rgba(0,0,0,0.3);">
+                <h2>Habilidades</h2>
+                <div class="skill-tabs">
+                    <button id="tab-btn-ST" class="skill-tab-btn active" onclick="mudarAbaSkills('ST')">ST <span class="tab-count">[0]</span></button>
+                    <button id="tab-btn-MP" class="skill-tab-btn" onclick="mudarAbaSkills('MP')">MP <span class="tab-count">[0]</span></button>
+                    <button id="tab-btn-PSI" class="skill-tab-btn" onclick="mudarAbaSkills('PSI')">PSI <span class="tab-count">[0]</span></button>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items: center;">
+                    <div>
+                        <button class="sub-tab-btn active" onclick="mudarSubAba('A')">Ativas</button>
+                        <button class="sub-tab-btn" onclick="mudarSubAba('P')">Passivas</button>
+                    </div>
+                    <div>
+                        <select id="filter-raridade" onchange="organizarSkillsVisualmente()" style="padding: 2px;">
                             <option value="Todas">Todas</option>
                             <option value="Comum">Comum</option>
                             <option value="Incomum">Incomum</option>
                             <option value="Raro">Raro</option>
-                            <option value="Raríssima">Raríssima</option>
                             <option value="Épico">Épico</option>
                             <option value="Lendário">Lendário</option>
-                            <option value="Mítico">Mítico</option>
                         </select>
-                        <span id="skills-gastos" style="display:none;">0</span>
                     </div>
-
-                    <div class="skill-tabs">
-                        <button id="tab-btn-ST" class="skill-tab-btn active" onclick="mudarAbaSkills('ST')">ST <span class="tab-count">[0]</span></button>
-                        <button id="tab-btn-MP" class="skill-tab-btn" onclick="mudarAbaSkills('MP')">MP <span class="tab-count">[0]</span></button>
-                        <button id="tab-btn-PSI" class="skill-tab-btn" onclick="mudarAbaSkills('PSI')">PSI <span class="tab-count">[0]</span></button>
-                    </div>
-
-                    <div class="sub-skill-tabs" style="display: flex; gap: 5px; margin-bottom: 15px; justify-content: center;">
-                        <button class="sub-tab-btn active" onclick="mudarSubAba('A')">Ativas</button>
-                        <button class="sub-tab-btn" onclick="mudarSubAba('P')">Passivas</button>
-                    </div>
-
-                    <div id="skills-view-area">
-                        <div id="container-visualizacao"></div>
-                    </div>
-                    <div id="skills-storage" style="display: none;"></div>
-                    <button onclick="adicionarSkill()" class="mod-btn" style="width: 100%; margin-top: 15px;">+ Nova Skill</button>
                 </div>
+                
+                <div id="container-visualizacao"></div>
+                <button onclick="adicionarSkill()" class="mod-btn" style="width:100%; margin-top:10px;">+ Nova Habilidade</button>
+                <div id="skills-storage" style="display:none;"></div>
 
-                <div class="status-box">
-                    <div style="margin-bottom: 10px; border-bottom: 1px solid var(--cor-borda-escura); padding-bottom: 5px;">
-                        <h2 style="margin: 0; border: none; padding: 0;">Inventário</h2>
+                <hr>
+                <h2>Inventário</h2>
+                <div style="background-color: rgba(255,255,255,0.3); padding: 10px; border-radius: 4px; border: 1px solid var(--cor-borda-sutil);">
+                    <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                        <select id="inv-categoria" style="width: 100px;">
+                            <option value="geral">Geral</option>
+                            <option value="arma">Arma</option>
+                            <option value="armadura">Armadura</option>
+                            <option value="acessorio">Acessório</option>
+                        </select>
+                        <input type="text" id="inv-nome" placeholder="Nome do Item" style="flex-grow: 1;">
+                        <input type="number" id="inv-qtd" value="1" style="width: 50px; text-align: center;">
                     </div>
-
-                    <div class="inv-form-header">
-                        <div style="flex-grow: 1;">
-                            <div style="display: flex; gap: 5px;">
-                                <select id="inv-categoria" class="inv-input">
-                                    <option value="item">Item</option>
-                                    <option value="arma">Arma</option>
-                                    <option value="armadura">Armadura</option>
-                                </select>
-                                <select id="inv-raridade" class="inv-input">
-                                    <option value="Comum">Comum</option>
-                                    <option value="Incomum">Incomum</option>
-                                    <option value="Raro">Raro</option>
-                                    <option value="Raríssima">Raríssima</option>
-                                    <option value="Épico">Épico</option>
-                                    <option value="Lendário">Lendário</option>
-                                    <option value="Mítico">Mítico</option>
-                                </select>
-                                <input type="number" id="inv-qtd" class="inv-input" value="1" min="1" placeholder="Qtd" style="width: 60px;">
-                            </div>
-                            <input type="text" id="inv-nome" class="inv-input" placeholder="Nome do Item" style="width: 100%; margin-top: 5px;">
-                            <div id="inv-campo-extra" style="margin-top: 5px;"></div>
-                            <textarea id="inv-desc" class="inv-input" rows="2" placeholder="Descrição do Item..." style="width: 100%; margin-top: 5px;"></textarea>
-                            <button onclick="adicionarItemInventario()" class="mod-btn adicionar-inv-btn" style="width: 100%; margin-top: 5px;">📥 Adicionar</button>
-                        </div>
+                    <div style="display: flex; gap: 5px;">
+                        <select id="inv-raridade" style="width: 100px;">
+                            <option value="Comum">Comum</option>
+                            <option value="Incomum">Incomum</option>
+                            <option value="Raro">Raro</option>
+                            <option value="Épico">Épico</option>
+                            <option value="Lendário">Lendário</option>
+                        </select>
+                        <div id="inv-campo-extra" style="flex-grow: 1;"></div>
                     </div>
-                    <div id="inventario-container"></div>
+                    <textarea id="inv-desc" rows="1" placeholder="Descrição rápida..." style="width: 100%; margin-top: 5px;"></textarea>
+                    <button onclick="adicionarItemInventario()" class="mod-btn adicionar-inv-btn" style="width: 100%; margin-top: 5px;">📥 Guardar Item</button>
                 </div>
-
+                <div id="inventario-container" style="margin-top: 10px;"></div>
             </div>
         </div>
     </div>
 
     <div id="cropper-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
-            <h3>Ajustar Imagem</h3>
+            <h3>Ajustar Retrato</h3>
             <div class="img-container-crop">
                 <img id="image-to-crop" src="" alt="Imagem para recortar">
             </div>
             <div class="modal-buttons">
-                <button onclick="cancelarRecorte()" class="mod-btn" style="border-color: var(--cor-perigo); color: var(--cor-perigo);">Cancelar</button>
-                <button onclick="confirmarRecorte()" class="mod-btn" style="border-color: var(--cor-sucesso); color: var(--cor-sucesso);">Confirmar</button>
+                <button onclick="cancelarRecorte()" class="mod-btn rec-btn-danger">Cancelar</button>
+                <button onclick="confirmarRecorte()" class="mod-btn rec-btn-success">Confirmar</button>
             </div>
         </div>
     </div>
 
+    <div id="login-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Identifique-se</h3>
+            <input type="email" id="email-input" placeholder="E-mail" style="width: 100%; margin-bottom: 10px;">
+            <input type="password" id="senha-input" placeholder="Senha" style="width: 100%; margin-bottom: 10px;">
+            <p id="msg-erro" style="color: var(--cor-perigo); font-size: 0.9rem;"></p>
+            <div class="modal-buttons">
+                <button onclick="fazerLogin()" class="mod-btn">Entrar</button>
+                <button onclick="criarConta()" class="mod-btn">Criar Conta</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="nuvem-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h3>Fichas na Nuvem</h3>
+            <button onclick="salvarNovaFichaNuvem()" class="mod-btn" style="width: 100%; margin-bottom: 15px;">☁️ Salvar Ficha Atual</button>
+            <div id="lista-fichas-nuvem" style="text-align: left; max-height: 200px; overflow-y: auto;"></div>
+            <button onclick="fecharModalNuvem()" class="mod-btn" style="margin-top: 15px;">Fechar</button>
+        </div>
+    </div>
+
     <div id="dice-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000;">
-        <button onclick="rolarD20()" class="mod-btn" style="border-radius: 50%; width: 60px; height: 60px; font-size: 1.5rem; background: var(--cor-header-box); border: 2px solid var(--cor-destaque); box-shadow: 0 0 10px var(--cor-destaque);">🎲</button>
+        <button onclick="rolarD20()" class="mod-btn" style="border-radius: 50%; width: 60px; height: 60px; font-size: 1.5rem;">🎲</button>
     </div>
 
     <script src="script.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then((reg) => console.log('Service Worker registrado!', reg))
-                    .catch((err) => console.log('Erro ao registrar SW:', err));
+                navigator.serviceWorker.register('./sw.js');
             });
         }
     </script>
